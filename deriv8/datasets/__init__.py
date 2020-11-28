@@ -5,7 +5,7 @@ from pathlib import Path
 
 from deriv8.matrix2d import Matrix2D, shape
 
-MAX_ITEMS = 10
+MAX_ITEMS = 17
 
 
 def load_mnist() -> tuple[Matrix2D, Matrix2D, Matrix2D, Matrix2D]:

@@ -1,4 +1,5 @@
-from deriv8.matrix2d import Matrix2D, add, element_multiply, matrix_multiply, minus, rand, shape, transpose, zeros
+from deriv8.matrix2d import (Matrix2D, add, element_multiply, matrix_multiply, minus, one_hot_encode, rand, shape,
+                             transpose, zeros)
 from deriv8.activation import relu
 from deriv8.datasets import load_mnist
 
@@ -56,11 +57,13 @@ def _back_propagation(X, Y, predictions: Matrix2D, parameters, cache: dict[str, 
 def main():
     Xtrain, Ytrain, Xtest, Ytest = load_mnist()
 
+    labels = list(map(float, range(10)))
+
     # We want training examples stacked in columns, not rows
     Xtrain = transpose(Xtrain)
-    Ytrain = transpose(Ytrain)
+    Ytrain = one_hot_encode(transpose(Ytrain), labels)
     Xtest = transpose(Xtest)
-    Ytest = transpose(Ytest)
+    Ytest = one_hot_encode(transpose(Ytest), labels)
 
     input_num_units = shape(Xtrain)[0]
     output_num_units = shape(Ytrain)[0]

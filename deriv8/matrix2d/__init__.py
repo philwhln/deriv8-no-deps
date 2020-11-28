@@ -42,6 +42,9 @@ def broadcast_A_or_B(A, B: Matrix2D) -> tuple[Matrix2D, Matrix2D]:
     A_shape = shape(A)
     B_shape = shape(B)
 
+    if A_shape == B_shape:
+        return A, B
+
     assert (A_shape[0] == B_shape[0] and (A_shape[1] == 1 or B_shape[1] == 1)) or \
            (A_shape[1] == B_shape[1] and (A_shape[0] == 1 or B_shape[0] == 1)), \
         "matrix shapes {} and {} are incompatible for broadcasting".format(A_shape, B_shape)
@@ -50,10 +53,8 @@ def broadcast_A_or_B(A, B: Matrix2D) -> tuple[Matrix2D, Matrix2D]:
 
     if A_shape != to_shape:
         return broadcast(A, to_shape), B
-    elif B_shape != to_shape:
-        return A, broadcast(B, to_shape)
     else:
-        return A, B
+        return A, broadcast(B, to_shape)
 
 
 def add(A: Matrix2D, B: Matrix2D) -> Matrix2D:
@@ -131,4 +132,3 @@ def transpose(A: Matrix2D) -> Matrix2D:
 
 def zeros(rows: int, cols: int) -> Matrix2D:
     return [[0. for i in range(cols)] for j in range(rows)]
-
