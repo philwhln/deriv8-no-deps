@@ -1,6 +1,6 @@
 import pytest
 
-from deriv8.matrix2d import add, element_multiply, matrix_multiply, minus, shape, transpose
+from deriv8.matrix2d import add, element_multiply, matrix_multiply, minus, one_hot_encode, shape, transpose
 
 
 @pytest.mark.parametrize("matrix, expected_shape", [
@@ -61,3 +61,11 @@ def test_add(A, B, expected_C):
 ])
 def test_minus(A, B, expected_C):
     assert minus(A, B) == expected_C
+
+
+@pytest.mark.parametrize("A, labels, expected", [
+    ([[6., 8., 4.]], [2., 4., 6., 8.], [[0., 0., 0.], [0., 0., 1.], [1., 0., 0.], [0., 1., 0.]]),
+    ([["c", "a", "b"]], ["a", "b", "c", "d"], [[0., 1., 0.], [0., 0., 1.], [1., 0., 0.], [0., 0., 0.]]),
+])
+def test_one_hot_encode(A, labels, expected):
+    assert one_hot_encode(A, labels) == expected

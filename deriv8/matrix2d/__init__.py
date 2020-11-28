@@ -95,6 +95,21 @@ def element_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
+def one_hot_encode(A: Matrix2D, labels: list) -> Matrix2D:
+    A_shape = shape(A)
+    assert A_shape[0] == 1
+
+    num_labels = len(labels)
+    num_values = A_shape[1]
+
+    B = zeros(num_labels, num_values)
+    for j, value in enumerate(A[0]):
+        i = labels.index(value)
+        B[i][j] = 1.
+
+    return B
+
+
 def rand(rows: int, cols: int) -> Matrix2D:
     return [[random.uniform(-1., 1.) for i in range(cols)] for j in range(rows)]
 
