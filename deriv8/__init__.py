@@ -1,8 +1,9 @@
+from deriv8.matrix2d import Matrix2D, add, element_multiply, matrix_multiply, rand, shape, transpose, zeros
+from deriv8.activation import relu
+from deriv8.datasets import load_mnist
 
-from deriv8.matrix2d import Matrix2D, add, matrix_multiply, rand, zeros
 
-
-def _init_parameters(input_num_units: int, layers_num_units: int) -> dict[str, Matrix2D]:
+def _init_parameters(input_num_units: int, layers_num_units: list[int]) -> dict[str, Matrix2D]:
     layers = [input_num_units, *layers_num_units]
     parameters = {}
     for layer_index in range(1, len(layers)):
@@ -21,21 +22,47 @@ def _init_layer_biases(fan_out: int) -> Matrix2D:
     return zeros(fan_out, 1)
 
 
+def _relu_activation(A: Matrix2D) -> Matrix2D:
+    return [[max(Aij, 0.) for Aij in Ai] for Ai in A]
+
+
 def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> Matrix2D:
     W1 = parameters["W1"]
     B1 = parameters["B1"]
-    A1 = add(matrix_multiply(W1, X), B1)
+    W2 = parameters["W2"]
+    B2 = parameters["B2"]
 
-    Y = A1 # temp
+    A0 = X
+    Z1 = add(matrix_multiply(W1, A0), B1)
+    A1 = relu(Z1)
+    Z2 = add(matrix_multiply(W2, A1), B2)
+    A2 = relu(Z2)
+    Y = A2
+
     return Y
 
 
+def _back_propagation(X, Y, predictions: Matrix2D, parameters, cache: dict[str, Matrix2D]) -> Matrix2D:
+    for (x, y, prediction) in zip(X, Y, predictions):
+        pass
+
+
 def main():
-    input_num_units = 2
-    layers_num_units = [3, 1]
+    Xtrain, Ytrain, Xtest, Ytest = load_mnist()
+
+    # We want training examples stacked in columns, not rows
+    Xtrain = transpose(Xtrain)
+    Ytrain = transpose(Ytrain)
+    Xtest = transpose(Xtest)
+    Ytest = transpose(Ytest)
+
+    input_num_units = shape(Xtrain)[0]
+    output_num_units = shape(Ytrain)[0]
+
+    print("input_num_units={} output_num_units={}".format(input_num_units, output_num_units))
+
+    layers_num_units = [100, output_num_units]
     parameters = _init_parameters(input_num_units, layers_num_units)
-    print(parameters)
 
-
-if __name__ == '__main__':
-    main()
+    predictions = _forward_propagation(Xtrain, parameters)
+    print(predictions)
