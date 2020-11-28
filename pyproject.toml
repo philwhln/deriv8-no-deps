@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "deriv8"
+version = "0.1.0"
+description = "Basic implementation of backprop for learning purposes"
+authors = ["Phil Whelan <phil123@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pytest = "^6.1.2"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
