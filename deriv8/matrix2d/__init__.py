@@ -69,6 +69,19 @@ def add(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
+def minus(A: Matrix2D, B: Matrix2D) -> Matrix2D:
+    A_, B_ = broadcast_A_or_B(A, B)
+
+    C_shape = shape(A_)
+    C = zeros(*C_shape)
+
+    for j in range(C_shape[1]):
+        for i in range(C_shape[0]):
+            C[i][j] = A_[i][j] - B_[i][j]
+
+    return C
+
+
 def element_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     A_, B_ = broadcast_A_or_B(A, B)
 
@@ -103,5 +116,4 @@ def transpose(A: Matrix2D) -> Matrix2D:
 
 def zeros(rows: int, cols: int) -> Matrix2D:
     return [[0. for i in range(cols)] for j in range(rows)]
-
 

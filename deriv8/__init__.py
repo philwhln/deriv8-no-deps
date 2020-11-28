@@ -1,4 +1,4 @@
-from deriv8.matrix2d import Matrix2D, add, element_multiply, matrix_multiply, rand, shape, transpose, zeros
+from deriv8.matrix2d import Matrix2D, add, element_multiply, matrix_multiply, minus, rand, shape, transpose, zeros
 from deriv8.activation import relu
 from deriv8.datasets import load_mnist
 
@@ -42,6 +42,12 @@ def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> Matrix
     return Y
 
 
+def calculate_loss(Y, predictions: Matrix2D) -> float:
+    # TODO: implement proper loss function
+    delta = minus(Y, predictions)
+    return delta
+
+
 def _back_propagation(X, Y, predictions: Matrix2D, parameters, cache: dict[str, Matrix2D]) -> Matrix2D:
     for (x, y, prediction) in zip(X, Y, predictions):
         pass
@@ -65,4 +71,8 @@ def main():
     parameters = _init_parameters(input_num_units, layers_num_units)
 
     predictions = _forward_propagation(Xtrain, parameters)
+
+    loss = calculate_loss(Ytrain, predictions)
+    print("training loss: {}".format(loss))
+
     print(predictions)
