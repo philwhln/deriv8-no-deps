@@ -82,15 +82,26 @@ def element_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
+def rand(rows: int, cols: int) -> Matrix2D:
+    return [[random.uniform(-1., 1.) for i in range(cols)] for j in range(rows)]
+
+
 def shape(A: Matrix2D) -> Shape2D:
     rows = len(A)
     cols = len(A[0])  # assume all rows are equal length
     return rows, cols
 
 
-def rand(rows: int, cols: int) -> Matrix2D:
-    return [[random.uniform(-1., 1.) for i in range(cols)] for j in range(rows)]
+def transpose(A: Matrix2D) -> Matrix2D:
+    A_shape = shape(A)
+    A_transposed = zeros(*reversed(A_shape))
+    for i in range(A_shape[0]):
+        for j in range(A_shape[1]):
+            A_transposed[j][i] = A[i][j]
+    return A_transposed
 
 
 def zeros(rows: int, cols: int) -> Matrix2D:
     return [[0. for i in range(cols)] for j in range(rows)]
+
+

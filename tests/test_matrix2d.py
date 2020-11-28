@@ -1,6 +1,6 @@
 import pytest
 
-from deriv8.matrix2d import add, element_multiply, matrix_multiply, shape
+from deriv8.matrix2d import add, element_multiply, matrix_multiply, shape, transpose
 
 
 @pytest.mark.parametrize("matrix, expected_shape", [
@@ -9,6 +9,15 @@ from deriv8.matrix2d import add, element_multiply, matrix_multiply, shape
 ])
 def test_shape(matrix, expected_shape):
     assert shape(matrix) == expected_shape
+
+
+@pytest.mark.parametrize("matrix, expected_transpose", [
+    ([[1., 2.], [4., 5.]], [[1., 4.], [2., 5.]]),
+    ([[1., 2., 3.], [4., 5., 6.]], [[1., 4.], [2., 5.], [3., 6.]]),
+    ([[1., 4.], [2., 5.], [3., 6.]], [[1., 2., 3.], [4., 5., 6.]]),
+])
+def test_transpose(matrix, expected_transpose):
+    assert transpose(matrix) == expected_transpose
 
 
 @pytest.mark.parametrize("A, B, expected_C", [
