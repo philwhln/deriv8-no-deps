@@ -64,7 +64,7 @@ def add(A: Matrix2D, B: Matrix2D) -> Matrix2D:
 
     for j in range(C_shape[1]):
         for i in range(C_shape[0]):
-            C[i][j] += A_[i][j] + B_[i][j]
+            C[i][j] = A_[i][j] + B_[i][j]
 
     return C
 
@@ -77,7 +77,7 @@ def element_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
 
     for j in range(C_shape[1]):
         for i in range(C_shape[0]):
-            C[i][j] += A_[i][j] * B_[i][j]
+            C[i][j] = A_[i][j] * B_[i][j]
 
     return C
 
