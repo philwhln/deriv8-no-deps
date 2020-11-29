@@ -1,4 +1,5 @@
 import random
+from math import log
 
 Matrix2D = list[list[float]]
 Shape2D = tuple[int, int]
@@ -7,7 +8,8 @@ Shape2D = tuple[int, int]
 def matrix_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     A_shape = shape(A)
     B_shape = shape(B)
-    assert A_shape[1] == B_shape[0], "matrices cannot be multiplied due to incompatible shapes"
+    assert A_shape[1] == B_shape[0], \
+        "matrix shapes {} and {} are incompatible for matrix multiplying".format(A_shape, B_shape)
 
     C_shape = (A_shape[0], B_shape[1])
     C = zeros(*C_shape)
@@ -23,19 +25,23 @@ def matrix_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
 # naive broadcasting
 def broadcast(A: Matrix2D, to_shape: Shape2D) -> Matrix2D:
     A_shape = shape(A)
-    B = A
 
-    assert (A_shape[0] == to_shape[0] and A_shape[1] == 1) or (A_shape[0] == 1 and A_shape[1] == to_shape[1]), \
-        "matrix cannot be broadcast to given shape"
+    assert (A_shape == (1, 1)) or \
+           (A_shape[0] == to_shape[0] and A_shape[1] == 1) or \
+           (A_shape[0] == 1 and A_shape[1] == to_shape[1]), \
+        "matrix shape {} cannot be broadcast to shape {}".format(A_shape, to_shape)
 
-    if A_shape[0] == 1 and A_shape[0] < to_shape[0]:
+    if A_shape[0] == 1 and A_shape[0] < to_shape[0] and A_shape[1] == 1 and A_shape[1] < to_shape[1]:
+        # expand number of rows and number of cols
+        return [[A[0][0]] * to_shape[1]] * to_shape[0]
+    elif A_shape[0] == 1 and A_shape[0] < to_shape[0]:
         # expand number of rows
-        B = A * to_shape[0]
-    if A_shape[1] == 1 and A_shape[1] < to_shape[1]:
+        return A * to_shape[0]
+    elif A_shape[1] == 1 and A_shape[1] < to_shape[1]:
         # expand number of cols
-        B = [A[i] * to_shape[1] for i in range(to_shape[0])]
+        return [A[i] * to_shape[1] for i in range(to_shape[0])]
 
-    return B
+    raise Exception("Unexpected for A_shape:{} to_shape:{}".format(A_shape, to_shape))
 
 
 def broadcast_A_or_B(A, B: Matrix2D) -> tuple[Matrix2D, Matrix2D]:
@@ -45,7 +51,8 @@ def broadcast_A_or_B(A, B: Matrix2D) -> tuple[Matrix2D, Matrix2D]:
     if A_shape == B_shape:
         return A, B
 
-    assert (A_shape[0] == B_shape[0] and (A_shape[1] == 1 or B_shape[1] == 1)) or \
+    assert (A_shape == (1, 1) or B_shape == (1, 1)) or \
+           (A_shape[0] == B_shape[0] and (A_shape[1] == 1 or B_shape[1] == 1)) or \
            (A_shape[1] == B_shape[1] and (A_shape[0] == 1 or B_shape[0] == 1)), \
         "matrix shapes {} and {} are incompatible for broadcasting".format(A_shape, B_shape)
 
@@ -96,6 +103,19 @@ def element_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
+def element_log(A: Matrix2D) -> Matrix2D:
+    A_shape = shape(A)
+    B = zeros(*A_shape)
+    for i in range(A_shape[0]):
+        for j in range(A_shape[1]):
+            try:
+                B[i][j] = log(A[i][j])
+            except ValueError:
+                print("Failed to get log of {} for A[{}][{}]".format(A[i][j], i, j))
+                raise
+    return B
+
+
 def one_hot_encode(A: Matrix2D, labels: list) -> Matrix2D:
     A_shape = shape(A)
     assert A_shape[0] == 1
@@ -119,6 +139,14 @@ def shape(A: Matrix2D) -> Shape2D:
     rows = len(A)
     cols = len(A[0])  # assume all rows are equal length
     return rows, cols
+
+
+def sum_rows(A: Matrix2D) -> Matrix2D:
+    return [[sum(row)] for row in A]
+
+
+def sum_all(A: Matrix2D) -> float:
+    return sum(sum(row) for row in A)
 
 
 def transpose(A: Matrix2D) -> Matrix2D:

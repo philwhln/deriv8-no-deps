@@ -1,6 +1,9 @@
+from math import exp
+
 import pytest
 
-from deriv8.matrix2d import add, element_multiply, matrix_multiply, minus, one_hot_encode, shape, transpose
+from deriv8.matrix2d import (add, element_log, element_multiply, matrix_multiply, minus, one_hot_encode, shape,
+                             sum_all, sum_rows, transpose)
 
 
 @pytest.mark.parametrize("matrix, expected_shape", [
@@ -63,9 +66,34 @@ def test_minus(A, B, expected_C):
     assert minus(A, B) == expected_C
 
 
+@pytest.mark.parametrize("A, expected", [
+    ([[exp(2.), exp(3.)], [exp(10.), exp(12.)]], [[2., 3.], [10., 12.]]),
+])
+def test_element_log(A, expected):
+    assert element_log(A) == expected
+
+
 @pytest.mark.parametrize("A, labels, expected", [
     ([[6., 8., 4.]], [2., 4., 6., 8.], [[0., 0., 0.], [0., 0., 1.], [1., 0., 0.], [0., 1., 0.]]),
     ([["c", "a", "b"]], ["a", "b", "c", "d"], [[0., 1., 0.], [0., 0., 1.], [1., 0., 0.], [0., 0., 0.]]),
 ])
 def test_one_hot_encode(A, labels, expected):
     assert one_hot_encode(A, labels) == expected
+
+
+@pytest.mark.parametrize("matrix, expected_sum", [
+    ([[1., 2.], [4., 5.]], 12.),
+    ([[1., 2.]], 3.),
+    ([[1.], [2.]], 3.),
+])
+def test_sum_all(matrix, expected_sum):
+    assert sum_all(matrix) == expected_sum
+
+
+@pytest.mark.parametrize("matrix, expected_sums", [
+    ([[1., 2.], [4., 5.]], [[3.], [9.]]),
+    ([[1., 2.]], [[3.]]),
+    ([[1.], [2.]], [[1.], [2.]]),
+])
+def test_sum_rows(matrix, expected_sums):
+    assert sum_rows(matrix) == expected_sums

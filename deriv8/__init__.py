@@ -1,6 +1,6 @@
-from deriv8.matrix2d import (Matrix2D, add, element_multiply, matrix_multiply, minus, one_hot_encode, rand, shape,
-                             transpose, zeros)
-from deriv8.activation import relu
+from deriv8.matrix2d import (Matrix2D, add, element_log, element_multiply, matrix_multiply, minus, one_hot_encode, rand,
+                             shape, sum_all, sum_rows, transpose, zeros)
+from deriv8.activation import relu, sigmoid
 from deriv8.datasets import load_mnist
 
 
@@ -27,7 +27,7 @@ def _relu_activation(A: Matrix2D) -> Matrix2D:
     return [[max(Aij, 0.) for Aij in Ai] for Ai in A]
 
 
-def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> Matrix2D:
+def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> tuple[Matrix2D, dict[str, Matrix2D]]:
     W1 = parameters["W1"]
     B1 = parameters["B1"]
     W2 = parameters["W2"]
@@ -37,21 +37,54 @@ def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> Matrix
     Z1 = add(matrix_multiply(W1, A0), B1)
     A1 = relu(Z1)
     Z2 = add(matrix_multiply(W2, A1), B2)
-    A2 = relu(Z2)
-    Y = A2
+    A2 = sigmoid(Z2)
 
-    return Y
+    cache = {
+        "A1": A1,
+        "Z1": Z1,
+        "A2": A2,
+        "Z2": Z2,
+    }
+
+    # return predictions (activation of final layer) and cache of values along the way, which will be used for
+    # backward propagation
+    return A2, cache
 
 
-def calculate_loss(Y, predictions: Matrix2D) -> float:
-    # TODO: implement proper loss function
-    delta = minus(Y, predictions)
-    return delta
+def calculate_cost(Y, Y_hat: Matrix2D) -> float:
+    batch_size = shape(Y)[1]
+    print(Y_hat)
+    log_probs = add(element_multiply(Y, element_log(Y_hat)),
+                    element_multiply(minus([[1.]], Y), element_log(minus([[1.]], Y_hat))))
+    cost = (-1. / batch_size) * sum_all(log_probs)
+    return cost
 
 
-def _back_propagation(X, Y, predictions: Matrix2D, parameters, cache: dict[str, Matrix2D]) -> Matrix2D:
-    for (x, y, prediction) in zip(X, Y, predictions):
-        pass
+def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]) \
+        -> tuple[Matrix2D, Matrix2D, Matrix2D, Matrix2D]:
+    batch_size = shape(X)[1]
+
+    W1 = parameters["W1"]
+    W2 = parameters["W2"]
+
+    A1 = cache["A1"]
+    Z1 = cache["Z1"]
+    A2 = cache["A2"]
+    Z2 = cache["Z2"]
+
+    dZ2 = minus(A2, Y)
+    dW2 = element_multiply([[1. / batch_size]], matrix_multiply(dZ2, transpose(A1)))
+    dB2 = element_multiply([[1. / batch_size]], sum_rows(dZ2))
+    dZ1 = None  # element_multiply(matrix_multiply(transpose(W2), dZ2),
+    dW1 = None
+    dB1 = None
+
+    # return gradients for weights and bias for each layer
+    return dW1, dB1, dW2, dB2
+
+
+def _normalize_inputs(X: Matrix2D) -> Matrix2D:
+    return minus(element_multiply(X, [[1./255.]]), [[0.5]])
 
 
 def main():
@@ -60,22 +93,20 @@ def main():
     labels = list(map(float, range(10)))
 
     # We want training examples stacked in columns, not rows
-    Xtrain = transpose(Xtrain)
+    Xtrain = _normalize_inputs(transpose(Xtrain))
     Ytrain = one_hot_encode(transpose(Ytrain), labels)
-    Xtest = transpose(Xtest)
+    Xtest = _normalize_inputs(transpose(Xtest))
     Ytest = one_hot_encode(transpose(Ytest), labels)
 
     input_num_units = shape(Xtrain)[0]
     output_num_units = shape(Ytrain)[0]
 
-    print("input_num_units={} output_num_units={}".format(input_num_units, output_num_units))
-
     layers_num_units = [100, output_num_units]
     parameters = _init_parameters(input_num_units, layers_num_units)
 
-    predictions = _forward_propagation(Xtrain, parameters)
+    Y_hat, cache = _forward_propagation(Xtrain, parameters)
 
-    loss = calculate_loss(Ytrain, predictions)
+    loss = calculate_cost(Ytrain, Y_hat)
     print("training loss: {}".format(loss))
 
-    print(predictions)
+    dW1, dB1, dW2, dB2 = _backward_propagation(Xtrain, Ytrain, parameters, cache)
