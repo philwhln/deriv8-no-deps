@@ -69,27 +69,51 @@ def calculate_accuracy(X, Y: Matrix2D, parameters: dict[str, Matrix2D]) -> float
     return (Y_shape[1] / correct)
 
 
-def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]) \
-        -> tuple[Matrix2D, Matrix2D, Matrix2D, Matrix2D]:
+def _relu_derivative(Z: Matrix2D):
+    return [[1. if Zij > 0. else 1. for Zij in Zi] for Zi in Z]
+
+
+def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]) -> dict[str, Matrix2D]:
     batch_size = shape(X)[1]
 
     W1 = parameters["W1"]
     W2 = parameters["W2"]
 
+    A0 = X
     A1 = cache["A1"]
     Z1 = cache["Z1"]
     A2 = cache["A2"]
     Z2 = cache["Z2"]
 
     dZ2 = minus(A2, Y)
+    assert shape(dZ2) == (10, batch_size)
     dW2 = element_multiply([[1. / batch_size]], matrix_multiply(dZ2, transpose(A1)))
+    assert shape(dW2) == (10, 100)
     dB2 = element_multiply([[1. / batch_size]], sum_rows(dZ2))
-    dZ1 = None  # element_multiply(matrix_multiply(transpose(W2), dZ2),
-    dW1 = None
-    dB1 = None
+    assert shape(dB2) == (10, 1)
+    dZ1 = element_multiply(matrix_multiply(transpose(W2), dZ2), _relu_derivative(Z1))
+    assert shape(dZ1) == (100, batch_size)
+    dW1 = element_multiply([[1. / batch_size]], matrix_multiply(dZ1, transpose(A0)))
+    assert shape(dW1) == (100, 784)
+    dB1 = element_multiply([[1. / batch_size]], sum_rows(dZ1))
+    assert shape(dB1) == (100, 1)
 
     # return gradients for weights and bias for each layer
-    return dW1, dB1, dW2, dB2
+    gradients = {
+        "dW1": dW1,
+        "dB1": dB1,
+        "dW2": dW2,
+        "dB2": dB2,
+    }
+    return gradients
+
+
+def _update_parameters(parameters, gradients: dict[str, Matrix2D], learning_rate: float) -> dict[str, Matrix2D]:
+    updated_parameters = {}
+    for param in ("W1", "B1", "W2", "B2"):
+        updated_parameters[param] = minus(parameters[param],
+                                          element_multiply([[learning_rate]], gradients["d" + param]))
+    return updated_parameters
 
 
 def _normalize_inputs(X: Matrix2D) -> Matrix2D:
@@ -97,7 +121,6 @@ def _normalize_inputs(X: Matrix2D) -> Matrix2D:
 
 
 def main():
-
     print("Loading data")
 
     Xtrain, Ytrain, Xtest, Ytest = load_mnist()
@@ -120,17 +143,23 @@ def main():
 
     print("Training")
 
-    for epoch in range(3):
+    learning_rate = 1e-3
 
+    for epoch in range(20):
         epoch_start_time = time.time()
+
         Y_hat, cache = _forward_propagation(Xtrain, parameters)
 
         loss = calculate_cost(Ytrain, Y_hat)
+
         train_accuracy = calculate_accuracy(Xtrain, Ytrain, parameters)
         test_accuracy = calculate_accuracy(Xtest, Ytest, parameters)
 
+        gradients = _backward_propagation(Xtrain, Ytrain, parameters, cache)
+
+        parameters = _update_parameters(parameters, gradients, learning_rate)
+
         epoch_duration = time.time() - epoch_start_time
+
         print("epoch: {}  training loss: {:0.2f}  train accuracy: {:0.2f}%  test accuracy: {:0.2f}%  duration: {:0.2f}s"
               .format(epoch, loss, train_accuracy, test_accuracy, epoch_duration))
-
-        dW1, dB1, dW2, dB2 = _backward_propagation(Xtrain, Ytrain, parameters, cache)
