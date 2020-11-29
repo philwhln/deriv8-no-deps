@@ -1,3 +1,5 @@
+import time
+
 from deriv8.matrix2d import (Matrix2D, add, argmax, element_equals, element_log, element_multiply, element_multiply_log,
                              matrix_multiply, minus, one_hot_encode, rand, shape, sum_all, sum_rows, transpose, zeros)
 from deriv8.activation import relu, softmax
@@ -95,7 +97,12 @@ def _normalize_inputs(X: Matrix2D) -> Matrix2D:
 
 
 def main():
+
+    print("Loading data")
+
     Xtrain, Ytrain, Xtest, Ytest = load_mnist()
+
+    print("Preparing data")
 
     labels = list(map(float, range(10)))
 
@@ -111,13 +118,19 @@ def main():
     layers_num_units = [100, output_num_units]
     parameters = _init_parameters(input_num_units, layers_num_units)
 
-    Y_hat, cache = _forward_propagation(Xtrain, parameters)
+    print("Training")
 
-    loss = calculate_cost(Ytrain, Y_hat)
-    train_accuracy = calculate_accuracy(Xtrain, Ytrain, parameters)
-    test_accuracy = calculate_accuracy(Xtest, Ytest, parameters)
+    for epoch in range(3):
 
-    print("training loss: {:0.2f}  train accuracy: {:0.2f}%  test accuracy: {:0.2f}%"
-          .format(loss, train_accuracy, test_accuracy))
+        epoch_start_time = time.time()
+        Y_hat, cache = _forward_propagation(Xtrain, parameters)
 
-    dW1, dB1, dW2, dB2 = _backward_propagation(Xtrain, Ytrain, parameters, cache)
+        loss = calculate_cost(Ytrain, Y_hat)
+        train_accuracy = calculate_accuracy(Xtrain, Ytrain, parameters)
+        test_accuracy = calculate_accuracy(Xtest, Ytest, parameters)
+
+        epoch_duration = time.time() - epoch_start_time
+        print("epoch: {}  training loss: {:0.2f}  train accuracy: {:0.2f}%  test accuracy: {:0.2f}%  duration: {:0.2f}s"
+              .format(epoch, loss, train_accuracy, test_accuracy, epoch_duration))
+
+        dW1, dB1, dW2, dB2 = _backward_propagation(Xtrain, Ytrain, parameters, cache)
