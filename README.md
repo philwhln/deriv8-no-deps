@@ -11,3 +11,8 @@ in production (or anywhere for that matter), unless you have a lot of time to ki
 
 * Python 3.8.5 of above (only tested on this)
 * Poetry for managing dependencies
+
+## Dataset
+
+Using the MNIST dataset of images of hand-written digits from zero to nine.
+http://yann.lecun.com/exdb/mnist/

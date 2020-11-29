@@ -1,6 +1,6 @@
 from deriv8.matrix2d import (Matrix2D, add, element_log, element_multiply, matrix_multiply, minus, one_hot_encode, rand,
                              shape, sum_all, sum_rows, transpose, zeros)
-from deriv8.activation import relu, sigmoid
+from deriv8.activation import relu, softmax
 from deriv8.datasets import load_mnist
 
 
@@ -37,7 +37,7 @@ def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> tuple[
     Z1 = add(matrix_multiply(W1, A0), B1)
     A1 = relu(Z1)
     Z2 = add(matrix_multiply(W2, A1), B2)
-    A2 = sigmoid(Z2)
+    A2 = softmax(Z2)
 
     cache = {
         "A1": A1,

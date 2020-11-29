@@ -1,5 +1,5 @@
 import random
-from math import log
+from math import exp, log
 
 Matrix2D = list[list[float]]
 Shape2D = tuple[int, int]
@@ -103,17 +103,12 @@ def element_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
+def element_exp(A: Matrix2D) -> Matrix2D:
+    return [[exp(Aij) for Aij in Ai] for Ai in A]
+
+
 def element_log(A: Matrix2D) -> Matrix2D:
-    A_shape = shape(A)
-    B = zeros(*A_shape)
-    for i in range(A_shape[0]):
-        for j in range(A_shape[1]):
-            try:
-                B[i][j] = log(A[i][j])
-            except ValueError:
-                print("Failed to get log of {} for A[{}][{}]".format(A[i][j], i, j))
-                raise
-    return B
+    return [[log(Aij) for Aij in Ai] for Ai in A]
 
 
 def one_hot_encode(A: Matrix2D, labels: list) -> Matrix2D:

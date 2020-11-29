@@ -2,8 +2,8 @@ from math import exp
 
 import pytest
 
-from deriv8.matrix2d import (add, element_log, element_multiply, matrix_multiply, minus, one_hot_encode, shape,
-                             sum_all, sum_rows, transpose)
+from deriv8.matrix2d import (add, element_exp, element_log, element_multiply, matrix_multiply, minus, one_hot_encode,
+                             shape, sum_all, sum_rows, transpose)
 
 
 @pytest.mark.parametrize("matrix, expected_shape", [
@@ -64,6 +64,13 @@ def test_add(A, B, expected_C):
 ])
 def test_minus(A, B, expected_C):
     assert minus(A, B) == expected_C
+
+
+@pytest.mark.parametrize("A, expected", [
+    ([[2., 3.], [10., 12.]], [[exp(2.), exp(3.)], [exp(10.), exp(12.)]]),
+])
+def test_element_exp(A, expected):
+    assert element_exp(A) == expected
 
 
 @pytest.mark.parametrize("A, expected", [

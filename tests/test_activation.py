@@ -1,6 +1,6 @@
 import pytest
 
-from deriv8.activation import relu, sigmoid
+from deriv8.activation import relu, sigmoid, softmax
 
 
 @pytest.mark.parametrize("input, expected_output", [
@@ -16,3 +16,12 @@ def test_relu(input, expected_output):
 ])
 def test_sigmoid(input, expected_output):
     assert sigmoid(input) == expected_output
+
+
+@pytest.mark.parametrize("input, expected_output", [
+    ([[1., 0., 1.], [2., 123.2, -12.56]],
+     [[0.2689414213699951, 3.1255023481538206e-54, 0.9999987088810225],
+      [0.7310585786300049, 1., 1.2911189775612279e-06]])
+])
+def test_softmax(input, expected_output):
+    assert softmax(input) == expected_output
