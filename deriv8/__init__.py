@@ -53,6 +53,8 @@ def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> tuple[
 
 def calculate_cost(Y, Y_hat: Matrix2D) -> float:
     batch_size = shape(Y)[1]
+    # TODO: even though mathematically y.log(y) will be zero when y is zero, we're likely to still
+    #       be evaluating log(y) and log(0) causes "ValueError: math domain error"
     log_probs = add(element_multiply(Y, element_log(Y_hat)),
                     element_multiply(minus([[1.]], Y), element_log(minus([[1.]], Y_hat))))
     cost = (-1. / batch_size) * sum_all(log_probs)
