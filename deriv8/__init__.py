@@ -1,5 +1,5 @@
-from deriv8.matrix2d import (Matrix2D, add, argmax, element_equals, element_log, element_multiply, matrix_multiply,
-                             minus, one_hot_encode, rand, shape, sum_all, sum_rows, transpose, zeros)
+from deriv8.matrix2d import (Matrix2D, add, argmax, element_equals, element_log, element_multiply, element_multiply_log,
+                             matrix_multiply, minus, one_hot_encode, rand, shape, sum_all, sum_rows, transpose, zeros)
 from deriv8.activation import relu, softmax
 from deriv8.datasets import load_mnist
 
@@ -53,10 +53,9 @@ def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> tuple[
 
 def calculate_cost(Y, Y_hat: Matrix2D) -> float:
     batch_size = shape(Y)[1]
-    # TODO: even though mathematically y.log(y) will be zero when y is zero, we're likely to still
-    #       be evaluating log(y) and log(0) causes "ValueError: math domain error"
-    log_probs = add(element_multiply(Y, element_log(Y_hat)),
-                    element_multiply(minus([[1.]], Y), element_log(minus([[1.]], Y_hat))))
+    # Note: element_multiply_log skips evaluating log(y_hat) when y is zero.
+    log_probs = add(element_multiply_log(Y, Y_hat),
+                    element_multiply_log(minus([[1.]], Y), minus([[1.]], Y_hat)))
     cost = (-1. / batch_size) * sum_all(log_probs)
     return cost
 
@@ -118,7 +117,7 @@ def main():
     train_accuracy = calculate_accuracy(Xtrain, Ytrain, parameters)
     test_accuracy = calculate_accuracy(Xtest, Ytest, parameters)
 
-    print("training loss: {:0.2f}  train accuracy: {:0.2f}  test accuracy: {:0.2f}"
+    print("training loss: {:0.2f}  train accuracy: {:0.2f}%  test accuracy: {:0.2f}%"
           .format(loss, train_accuracy, test_accuracy))
 
     dW1, dB1, dW2, dB2 = _backward_propagation(Xtrain, Ytrain, parameters, cache)

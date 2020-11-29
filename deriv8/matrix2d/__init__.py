@@ -117,6 +117,25 @@ def element_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
+# Even though mathematically a.log(b) will be zero when a and b are both zero, we'll still be evaluating
+# log(b) and log(0) causes "ValueError: math domain error". This function combines both, to skip the log(b)
+# evaluation when a is zero.
+def element_multiply_log(A: Matrix2D, B: Matrix2D) -> Matrix2D:
+    A_, B_ = broadcast_A_or_B(A, B)
+
+    C_shape = shape(A_)
+    C = zeros(*C_shape)
+
+    for j in range(C_shape[1]):
+        for i in range(C_shape[0]):
+            if A_[i][j] == 0.:
+                C[i][j] = 0.
+            else:
+                C[i][j] = A_[i][j] * log(B_[i][j])
+
+    return C
+
+
 def element_equals(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     A_, B_ = broadcast_A_or_B(A, B)
 
@@ -154,7 +173,7 @@ def one_hot_encode(A: Matrix2D, labels: list) -> Matrix2D:
 
 
 def rand(rows: int, cols: int) -> Matrix2D:
-    return [[random.uniform(-1., 1.) for i in range(cols)] for j in range(rows)]
+    return [[random.uniform(-0.5, 0.5) for i in range(cols)] for j in range(rows)]
 
 
 def shape(A: Matrix2D) -> Shape2D:
