@@ -1,5 +1,5 @@
-from deriv8.matrix2d import (Matrix2D, add, element_log, element_multiply, matrix_multiply, minus, one_hot_encode, rand,
-                             shape, sum_all, sum_rows, transpose, zeros)
+from deriv8.matrix2d import (Matrix2D, add, argmax, element_equals, element_log, element_multiply, matrix_multiply,
+                             minus, one_hot_encode, rand, shape, sum_all, sum_rows, transpose, zeros)
 from deriv8.activation import relu, softmax
 from deriv8.datasets import load_mnist
 
@@ -53,11 +53,17 @@ def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> tuple[
 
 def calculate_cost(Y, Y_hat: Matrix2D) -> float:
     batch_size = shape(Y)[1]
-    print(Y_hat)
     log_probs = add(element_multiply(Y, element_log(Y_hat)),
                     element_multiply(minus([[1.]], Y), element_log(minus([[1.]], Y_hat))))
     cost = (-1. / batch_size) * sum_all(log_probs)
     return cost
+
+
+def calculate_accuracy(X, Y: Matrix2D, parameters: dict[str, Matrix2D]) -> float:
+    Y_shape = shape(Y)
+    Y_hat, _ = _forward_propagation(X, parameters)
+    correct = sum_all(element_equals(argmax(Y_hat), argmax(Y)))
+    return (Y_shape[1] / correct)
 
 
 def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]) \
@@ -84,7 +90,7 @@ def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]
 
 
 def _normalize_inputs(X: Matrix2D) -> Matrix2D:
-    return minus(element_multiply(X, [[1./255.]]), [[0.5]])
+    return minus(element_multiply(X, [[1. / 255.]]), [[0.5]])
 
 
 def main():
@@ -107,6 +113,10 @@ def main():
     Y_hat, cache = _forward_propagation(Xtrain, parameters)
 
     loss = calculate_cost(Ytrain, Y_hat)
-    print("training loss: {}".format(loss))
+    train_accuracy = calculate_accuracy(Xtrain, Ytrain, parameters)
+    test_accuracy = calculate_accuracy(Xtest, Ytest, parameters)
+
+    print("training loss: {:0.2f}  train accuracy: {:0.2f}  test accuracy: {:0.2f}"
+          .format(loss, train_accuracy, test_accuracy))
 
     dW1, dB1, dW2, dB2 = _backward_propagation(Xtrain, Ytrain, parameters, cache)
