@@ -1,4 +1,6 @@
 import time
+from math import floor
+from random import shuffle
 
 from deriv8.matrix2d import (Matrix2D, add, argmax, element_equals, element_log, element_multiply, element_multiply_log,
                              matrix_multiply, minus, one_hot_encode, rand, shape, sum_all, sum_rows, transpose, zeros)
@@ -74,10 +76,14 @@ def _relu_derivative(Z: Matrix2D):
 
 
 def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]) -> dict[str, Matrix2D]:
-    batch_size = shape(X)[1]
+    X_shape = shape(X)
+
+    batch_size = X_shape[1]
 
     W1 = parameters["W1"]
+    B1 = parameters["B1"]
     W2 = parameters["W2"]
+    B2 = parameters["B2"]
 
     A0 = X
     A1 = cache["A1"]
@@ -86,17 +92,17 @@ def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]
     Z2 = cache["Z2"]
 
     dZ2 = minus(A2, Y)
-    assert shape(dZ2) == (10, batch_size)
+    assert shape(dZ2) == shape(Z2)
     dW2 = element_multiply([[1. / batch_size]], matrix_multiply(dZ2, transpose(A1)))
-    assert shape(dW2) == (10, 100)
+    assert shape(dW2) == shape(W2)
     dB2 = element_multiply([[1. / batch_size]], sum_rows(dZ2))
-    assert shape(dB2) == (10, 1)
+    assert shape(dB2) == shape(B2)
     dZ1 = element_multiply(matrix_multiply(transpose(W2), dZ2), _relu_derivative(Z1))
-    assert shape(dZ1) == (100, batch_size)
+    assert shape(dZ1) == shape(Z1)
     dW1 = element_multiply([[1. / batch_size]], matrix_multiply(dZ1, transpose(A0)))
-    assert shape(dW1) == (100, 784)
+    assert shape(dW1) == shape(W1)
     dB1 = element_multiply([[1. / batch_size]], sum_rows(dZ1))
-    assert shape(dB1) == (100, 1)
+    assert shape(dB1) == shape(B1)
 
     # return gradients for weights and bias for each layer
     gradients = {
@@ -120,46 +126,103 @@ def _normalize_inputs(X: Matrix2D) -> Matrix2D:
     return minus(element_multiply(X, [[1. / 255.]]), [[0.5]])
 
 
+def _shuffle_dataset(X, Y: Matrix2D) -> tuple[Matrix2D, Matrix2D]:
+    index = list(range(shape(X)[1]))
+    shuffle(index)
+    X_ = [[Xi[j] for j in index] for Xi in X]
+    Y_ = [[Yi[j] for j in index] for Yi in Y]
+    return X_, Y_
+
+
+# split A in batch_size batches, split by cols
+def split_into_batches(A, batch_size) -> list[Matrix2D]:
+    A_shape = shape(A)
+    num_batches = floor(A_shape[1] / batch_size)
+    overflow = A_shape[1] - (num_batches * batch_size)
+    batches = []
+
+    def _one_batch(start, end):
+        return [Ai[start:end] for Ai in A]
+
+    for b in range(num_batches):
+        batches.append(_one_batch(b * batch_size, (b + 1) * batch_size))
+
+    if overflow != 0:
+        batches.append(_one_batch(num_batches * batch_size, A_shape[1]))
+
+    total_cols_size = 0
+    for batch in batches:
+        batch_shape = shape(batch)
+        assert batch_shape[0] == A_shape[0]
+        assert batch_shape[1] == batch_size or batch_shape[1] == overflow
+        total_cols_size += batch_shape[1]
+    assert total_cols_size == A_shape[1]
+
+    return batches
+
+
 def main():
+
+    learning_rate = 1e-3
+    batch_size = 500
+    hidden_units = 500
+
     print("Loading data")
 
-    Xtrain, Ytrain, Xtest, Ytest = load_mnist()
+    X_train, Y_train, X_test, Y_test = load_mnist()
 
     print("Preparing data")
 
     labels = list(map(float, range(10)))
 
     # We want training examples stacked in columns, not rows
-    Xtrain = _normalize_inputs(transpose(Xtrain))
-    Ytrain = one_hot_encode(transpose(Ytrain), labels)
-    Xtest = _normalize_inputs(transpose(Xtest))
-    Ytest = one_hot_encode(transpose(Ytest), labels)
+    X_train = _normalize_inputs(transpose(X_train))
+    Y_train = one_hot_encode(transpose(Y_train), labels)
+    X_test = _normalize_inputs(transpose(X_test))
+    Y_test = one_hot_encode(transpose(Y_test), labels)
 
-    input_num_units = shape(Xtrain)[0]
-    output_num_units = shape(Ytrain)[0]
+    X_train, Y_train = _shuffle_dataset(X_train, Y_train)
 
-    layers_num_units = [100, output_num_units]
+    X_train_batches = split_into_batches(X_train, batch_size)
+    Y_train_batches = split_into_batches(Y_train, batch_size)
+
+    input_num_units = shape(X_train)[0]
+    output_num_units = shape(Y_train)[0]
+
+    layers_num_units = [hidden_units, output_num_units]
     parameters = _init_parameters(input_num_units, layers_num_units)
 
     print("Training")
 
-    learning_rate = 1e-3
-
     for epoch in range(20):
         epoch_start_time = time.time()
 
-        Y_hat, cache = _forward_propagation(Xtrain, parameters)
+        print("epoch: {}".format(epoch))
 
-        loss = calculate_cost(Ytrain, Y_hat)
+        for batch_index in range(len(X_train_batches)):
+            batch_start_time = time.time()
 
-        train_accuracy = calculate_accuracy(Xtrain, Ytrain, parameters)
-        test_accuracy = calculate_accuracy(Xtest, Ytest, parameters)
+            X_train_batch = X_train_batches[batch_index]
+            Y_train_batch = Y_train_batches[batch_index]
 
-        gradients = _backward_propagation(Xtrain, Ytrain, parameters, cache)
+            Y_hat, cache = _forward_propagation(X_train_batch, parameters)
 
-        parameters = _update_parameters(parameters, gradients, learning_rate)
+            loss = calculate_cost(Y_train_batch, Y_hat)
+
+            train_accuracy = calculate_accuracy(X_train_batch, Y_train_batch, parameters)
+
+            gradients = _backward_propagation(X_train_batch, Y_train_batch, parameters, cache)
+
+            parameters = _update_parameters(parameters, gradients, learning_rate)
+
+            batch_duration = time.time() - batch_start_time
+
+            print(" batch: {}  training loss: {:0.2f}  train accuracy: {:0.2f}%  duration: {:0.2f}s"
+                  .format(batch_index, loss, train_accuracy, batch_duration))
+
+        test_accuracy = calculate_accuracy(X_test, Y_test, parameters)
 
         epoch_duration = time.time() - epoch_start_time
 
-        print("epoch: {}  training loss: {:0.2f}  train accuracy: {:0.2f}%  test accuracy: {:0.2f}%  duration: {:0.2f}s"
-              .format(epoch, loss, train_accuracy, test_accuracy, epoch_duration))
+        print(" training loss: {:0.2f}  train accuracy: {:0.2f}%  test accuracy: {:0.2f}%  duration: {:0.2f}s"
+              .format(loss, train_accuracy, test_accuracy, epoch_duration))
