@@ -54,9 +54,9 @@ def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> tuple[
 
 
 def _calculate_cost(Y_hat, Y: Matrix2D) -> float:
-    batch_size = shape(Y)[1]
     loss = multinomial_logistic.loss(Y_hat, Y)
     # average loss
+    batch_size = shape(Y)[1]
     cost = (1. / batch_size) * sum_all(loss)
     return cost
 
@@ -86,6 +86,7 @@ def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]
     Z2 = cache["Z2"]
 
     dA2 = multinomial_logistic.loss_derivative(A2, Y)
+    print("dA2:{}".format(dA2))
     dA2_dZ2 = softmax.softmax_derivative(A2)
     assert shape(dA2_dZ2) == (shape(A2)[1], shape(A2)[1])
 
