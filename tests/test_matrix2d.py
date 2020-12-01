@@ -3,7 +3,8 @@ from math import exp
 import pytest
 
 from deriv8.matrix2d import (add, divide, element_equals, element_exp, element_log, element_multiply,
-                             element_multiply_log, matrix_multiply, minus, one_hot_encode, shape, sum_all, sum_rows, transpose)
+                             element_multiply_log, matrix_multiply, minus, negate, one_hot_encode, shape, sum_all,
+                             sum_cols, sum_rows, transpose)
 
 
 @pytest.mark.parametrize("matrix, expected_shape", [
@@ -76,6 +77,13 @@ def test_minus(A, B, expected_C):
     assert minus(A, B) == expected_C
 
 
+@pytest.mark.parametrize("A, expected", [
+    ([[2., -0.333], [-10., 0.1]], [[-2., 0.333], [10., -0.1]]),
+])
+def test_negate(A, expected):
+    assert negate(A) == expected
+
+
 @pytest.mark.parametrize("A, B, expected_C", [
     ([[2., 3.], [10., 12.]], [[-2., 3.], [10., 11.]], [[0., 1.], [1., 0.]]),
 ])
@@ -128,3 +136,12 @@ def test_sum_all(matrix, expected_sum):
 ])
 def test_sum_rows(matrix, expected_sums):
     assert sum_rows(matrix) == expected_sums
+
+
+@pytest.mark.parametrize("matrix, expected_sums", [
+    ([[1., 2.], [4., 5.]], [[5., 7.]]),
+    ([[1., 2.]], [[1., 2.]]),
+    ([[1.], [2.]], [[3.]]),
+])
+def test_sum_cols(matrix, expected_sums):
+    assert sum_cols(matrix) == expected_sums

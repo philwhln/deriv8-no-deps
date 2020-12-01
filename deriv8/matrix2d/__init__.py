@@ -103,6 +103,10 @@ def divide(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
+def negate(A: Matrix2D) -> Matrix2D:
+    return [[-Aij for Aij in Ai] for Ai in A]
+
+
 def argmax(A: Matrix2D) -> Matrix2D:
     A_shape = shape(A)
     A_max = zeros(1, A_shape[1])
@@ -174,10 +178,10 @@ def one_hot_encode(A: Matrix2D, labels: list) -> Matrix2D:
     A_shape = shape(A)
     assert A_shape[0] == 1
 
-    num_labels = len(labels)
+    num_classes = len(labels)
     num_values = A_shape[1]
 
-    B = zeros(num_labels, num_values)
+    B = zeros(num_classes, num_values)
     for j, value in enumerate(A[0]):
         i = labels.index(value)
         B[i][j] = 1.
@@ -197,6 +201,17 @@ def shape(A: Matrix2D) -> Shape2D:
 
 def sum_rows(A: Matrix2D) -> Matrix2D:
     return [[sum(row)] for row in A]
+
+
+def sum_cols(A: Matrix2D) -> Matrix2D:
+    A_shape = shape(A)
+    B = zeros(1, A_shape[1])
+
+    for j in range(A_shape[1]):
+        for i in range(A_shape[0]):
+            B[0][j] += A[i][j]
+
+    return B
 
 
 def sum_all(A: Matrix2D) -> float:
