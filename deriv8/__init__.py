@@ -4,7 +4,7 @@ from random import shuffle
 
 from deriv8.matrix2d import (Matrix2D, add, argmax, element_equals, element_log, element_multiply, element_multiply_log,
                              matrix_multiply, minus, one_hot_encode, rand, shape, sum_all, sum_rows, transpose, zeros)
-from deriv8.activation import relu, softmax
+from deriv8.activation import relu, relu_derivative, softmax
 from deriv8.datasets import load_mnist
 
 
@@ -25,10 +25,6 @@ def _init_layer_weights(fan_in: int, fan_out: int) -> Matrix2D:
 def _init_layer_biases(fan_out: int) -> Matrix2D:
     # zeros in a (fan_out x 1) size matrix
     return zeros(fan_out, 1)
-
-
-def _relu_activation(A: Matrix2D) -> Matrix2D:
-    return [[max(Aij, 0.) for Aij in Ai] for Ai in A]
 
 
 def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> tuple[Matrix2D, dict[str, Matrix2D]]:
@@ -71,10 +67,6 @@ def calculate_accuracy(X, Y: Matrix2D, parameters: dict[str, Matrix2D]) -> float
     return (Y_shape[1] / correct)
 
 
-def _relu_derivative(Z: Matrix2D):
-    return [[1. if Zij > 0. else 1. for Zij in Zi] for Zi in Z]
-
-
 def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]) -> dict[str, Matrix2D]:
     X_shape = shape(X)
 
@@ -97,7 +89,7 @@ def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]
     assert shape(dW2) == shape(W2)
     dB2 = element_multiply([[1. / batch_size]], sum_rows(dZ2))
     assert shape(dB2) == shape(B2)
-    dZ1 = element_multiply(matrix_multiply(transpose(W2), dZ2), _relu_derivative(Z1))
+    dZ1 = element_multiply(matrix_multiply(transpose(W2), dZ2), relu_derivative(Z1))
     assert shape(dZ1) == shape(Z1)
     dW1 = element_multiply([[1. / batch_size]], matrix_multiply(dZ1, transpose(A0)))
     assert shape(dW1) == shape(W1)
