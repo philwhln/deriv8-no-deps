@@ -2,8 +2,8 @@ from math import exp
 
 import pytest
 
-from deriv8.matrix2d import (add, element_equals, element_exp, element_log, element_multiply, element_multiply_log,
-                             matrix_multiply, minus, one_hot_encode, shape, sum_all, sum_rows, transpose)
+from deriv8.matrix2d import (add, divide, element_equals, element_exp, element_log, element_multiply,
+                             element_multiply_log, matrix_multiply, minus, one_hot_encode, shape, sum_all, sum_rows, transpose)
 
 
 @pytest.mark.parametrize("matrix, expected_shape", [
@@ -42,6 +42,16 @@ def test_matrix_multiply(A, B, expected_C):
 ])
 def test_element_multiply(A, B, expected_C):
     assert element_multiply(A, B) == expected_C
+
+
+@pytest.mark.parametrize("A, B, expected_C", [
+    ([[4., 10., 18.]], [[1., 2., 3.]], [[4., 5., 6.]]),
+    ([[4., 5., 6.]], [[1.]], [[4., 5., 6.]]),
+    ([[12.]], [[2., 3., 4.]], [[6., 4., 3.]]),
+    ([[-12.], [15.], [-18.]], [[-3.]], [[4.], [-5.], [6.]]),
+])
+def test_element_divide(A, B, expected_C):
+    assert divide(A, B) == expected_C
 
 
 @pytest.mark.parametrize("A, B, expected_C", [

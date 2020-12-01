@@ -90,6 +90,19 @@ def minus(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
+def divide(A: Matrix2D, B: Matrix2D) -> Matrix2D:
+    A_, B_ = broadcast_A_or_B(A, B)
+
+    C_shape = shape(A_)
+    C = zeros(*C_shape)
+
+    for j in range(C_shape[1]):
+        for i in range(C_shape[0]):
+            C[i][j] = A_[i][j] / B_[i][j]
+
+    return C
+
+
 def argmax(A: Matrix2D) -> Matrix2D:
     A_shape = shape(A)
     A_max = zeros(1, A_shape[1])
