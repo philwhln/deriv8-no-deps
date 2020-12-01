@@ -9,7 +9,3 @@ from deriv8.matrix2d import Matrix2D, negate, element_multiply_log, divide
 def loss(Y_hat, Y: Matrix2D) -> Matrix2D:
     # Note: element_multiply_log skips evaluating log(y_hat) when y is zero.
     return negate(element_multiply_log(Y, Y_hat))
-
-
-def loss_derivative(Y_hat, Y):
-    return negate(divide(Y, Y_hat))

@@ -85,13 +85,8 @@ def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]
     A2 = cache["A2"]
     Z2 = cache["Z2"]
 
-    dA2 = multinomial_logistic.loss_derivative(A2, Y)
-    print("dA2:{}".format(dA2))
-    dA2_dZ2 = softmax.softmax_derivative(A2)
-    assert shape(dA2_dZ2) == (shape(A2)[1], shape(A2)[1])
-
     # Layer 2 derivatives
-    dZ2 = matrix_multiply(dA2, dA2_dZ2)
+    dZ2 = minus(A2, Y)
     assert shape(dZ2) == shape(Z2)
     dW2 = element_multiply([[1. / batch_size]], matrix_multiply(dZ2, transpose(A1)))
     assert shape(dW2) == shape(W2)

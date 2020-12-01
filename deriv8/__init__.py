@@ -4,10 +4,10 @@ from deriv8 import model
 
 
 def main():
-    learning_rate = 1e-3
-    batch_size = 13
-    hidden_units = 500
-    epochs = 20
+    learning_rate = 3e-2
+    batch_size = 100
+    hidden_units = 200
+    epochs = 10
 
     print("Loading data")
 

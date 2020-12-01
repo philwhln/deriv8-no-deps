@@ -24,21 +24,3 @@ def softmax(Z: Matrix2D, stable=True) -> Matrix2D:
             Z_softmax[i][j] = Z_exp[i][j] / Z_exp_col_sum[0][j]
 
     return Z_softmax
-
-
-def softmax_derivative(A: Matrix2D) -> Matrix2D:
-    A_shape = shape(A)
-    N = A_shape[1]
-    dZ_dA = zeros(N, N)
-
-    for j in range(N):
-        for i in range(N):
-            if i == j:
-                dZ_dA[i][j] = A[0][i] * (1. - A[0][j])
-            elif i > j:
-                dZ_dA[i][j] = A[0][i] * (-A[0][j])
-            else:
-                # resulting matrix is mirrored diagonally, so we just copy the value (saves a multiplication)
-                dZ_dA[i][j] = dZ_dA[j][i]
-
-    return dZ_dA
