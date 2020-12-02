@@ -4,9 +4,14 @@ from random import shuffle
 from deriv8.matrix2d import Matrix2D, shape
 
 
-def shuffle_dataset(X, Y: Matrix2D) -> tuple[Matrix2D, Matrix2D]:
+def shuffle_dataset(X, Y: Matrix2D, truncate=None) -> tuple[Matrix2D, Matrix2D]:
+    assert shape(X)[1] == shape(Y)[1], "X and Y should have the same number of columns (training examples)"
+
     index = list(range(shape(X)[1]))
     shuffle(index)
+    if truncate and truncate < len(index):
+        index = index[:truncate]
+
     X_ = [[Xi[j] for j in index] for Xi in X]
     Y_ = [[Yi[j] for j in index] for Yi in Y]
     return X_, Y_

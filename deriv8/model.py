@@ -34,23 +34,29 @@ def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> tuple[
     B1 = parameters["B1"]
     W2 = parameters["W2"]
     B2 = parameters["B2"]
+    W3 = parameters["W3"]
+    B3 = parameters["B3"]
 
     A0 = X
     Z1 = add(matrix_multiply(W1, A0), B1)
     A1 = relu.relu(Z1)
     Z2 = add(matrix_multiply(W2, A1), B2)
-    A2 = softmax.softmax(Z2)
+    A2 = relu.relu(Z2)
+    Z3 = add(matrix_multiply(W3, A2), B3)
+    A3 = softmax.softmax(Z3)
 
     cache = {
         "A1": A1,
         "Z1": Z1,
         "A2": A2,
         "Z2": Z2,
+        "A3": A3,
+        "Z3": Z3,
     }
 
     # return predictions (activation of final layer) and cache of values along the way, which will be used for
     # backward propagation
-    return A2, cache
+    return A3, cache
 
 
 def _calculate_cost(Y_hat, Y: Matrix2D) -> float:
@@ -78,22 +84,35 @@ def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]
     B1 = parameters["B1"]
     W2 = parameters["W2"]
     B2 = parameters["B2"]
+    W3 = parameters["W3"]
+    B3 = parameters["B3"]
 
     A0 = X
     A1 = cache["A1"]
     Z1 = cache["Z1"]
     A2 = cache["A2"]
     Z2 = cache["Z2"]
+    A3 = cache["A3"]
+    Z3 = cache["Z3"]
+    Y_hat = A3
 
-    # Layer 2 derivatives
-    dZ2 = minus(A2, Y)
+    # Layer 3 (output) derivatives
+    dZ3 = minus(Y_hat, Y)
+    assert shape(dZ3) == shape(Z3)
+    dW3 = element_multiply([[1. / batch_size]], matrix_multiply(dZ3, transpose(A2)))
+    assert shape(dW3) == shape(W3)
+    dB3 = element_multiply([[1. / batch_size]], sum_rows(dZ3))
+    assert shape(dB3) == shape(B3)
+
+    # Layer 2 (hidden) derivatives
+    dZ2 = element_multiply(matrix_multiply(transpose(W3), dZ3), relu.relu_derivative(Z2))
     assert shape(dZ2) == shape(Z2)
     dW2 = element_multiply([[1. / batch_size]], matrix_multiply(dZ2, transpose(A1)))
     assert shape(dW2) == shape(W2)
     dB2 = element_multiply([[1. / batch_size]], sum_rows(dZ2))
     assert shape(dB2) == shape(B2)
 
-    # Layer 1 derivatives
+    # Layer 1 (hidden) derivatives
     dZ1 = element_multiply(matrix_multiply(transpose(W2), dZ2), relu.relu_derivative(Z1))
     assert shape(dZ1) == shape(Z1)
     dW1 = element_multiply([[1. / batch_size]], matrix_multiply(dZ1, transpose(A0)))
@@ -107,13 +126,16 @@ def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]
         "dB1": dB1,
         "dW2": dW2,
         "dB2": dB2,
+        "dW3": dW3,
+        "dB3": dB3,
     }
+
     return gradients
 
 
 def _update_parameters(parameters, gradients: dict[str, Matrix2D], learning_rate: float) -> dict[str, Matrix2D]:
     updated_parameters = {}
-    for param in ("W1", "B1", "W2", "B2"):
+    for param in ("W1", "B1", "W2", "B2", "W3", "B3"):
         updated_parameters[param] = minus(parameters[param],
                                           element_multiply([[learning_rate]], gradients["d" + param]))
     return updated_parameters
@@ -121,8 +143,6 @@ def _update_parameters(parameters, gradients: dict[str, Matrix2D], learning_rate
 
 def _train_one_mini_batch(X_train_batch, Y_train_batch, learning_rate, parameters):
     Y_hat, cache = _forward_propagation(X_train_batch, parameters)
-    if DEBUG:
-        print("Predictions : {}".format(argmax(Y_hat)))
     loss = _calculate_cost(Y_hat, Y_train_batch)
     train_accuracy = _calculate_accuracy(X_train_batch, Y_train_batch, parameters)
     gradients = _backward_propagation(X_train_batch, Y_train_batch, parameters, cache)
@@ -148,6 +168,7 @@ def _train_one_epoch(X_train_batches, Y_train_batches, parameters, learning_rate
 
         print(" batch: {}/{}  training loss: {:0.2f}  train accuracy: {:0.2f}%  duration: {:0.2f}s"
               .format(batch_index + 1, total_batches, loss, train_accuracy * 100., batch_duration))
+
     return loss, parameters
 
 
@@ -166,5 +187,3 @@ def train(X_train, Y_train, X_test, Y_test, parameters, epochs, batch_size, lear
 
         print(" training loss: {:0.2f}  test accuracy: {:0.2f}%  duration: {:0.2f}s"
               .format(loss, test_accuracy * 100., time.time() - epoch_start_time))
-
-

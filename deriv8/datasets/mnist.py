@@ -5,7 +5,7 @@ from pathlib import Path
 
 from deriv8.matrix2d import Matrix2D, minus, element_multiply
 
-MAX_ITEMS = 1000
+MAX_ITEMS = 60000
 
 
 def load() -> tuple[Matrix2D, Matrix2D, Matrix2D, Matrix2D]:
