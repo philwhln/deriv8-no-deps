@@ -1,6 +1,8 @@
 import os
 import time
 
+from typing import Dict, List, Tuple
+
 from deriv8.datasets.utils import shuffle_dataset, split_into_batches
 from deriv8.matrix2d import (Matrix2D, add, argmax, element_equals, element_multiply, matrix_multiply, minus, rand,
                              shape, sum_all, sum_rows, transpose, zeros)
@@ -10,7 +12,7 @@ from deriv8.activation_functions import relu, softmax
 DEBUG = bool(os.environ.get("DEBUG", False))
 
 
-def init_parameters(input_num_units: int, layers_num_units: list[int]) -> dict[str, Matrix2D]:
+def init_parameters(input_num_units: int, layers_num_units: List[int]) -> Dict[str, Matrix2D]:
     layers = [input_num_units, *layers_num_units]
     parameters = {}
     for layer_index in range(1, len(layers)):
@@ -29,7 +31,7 @@ def _init_layer_biases(fan_out: int) -> Matrix2D:
     return zeros(fan_out, 1)
 
 
-def _forward_propagation(X: Matrix2D, parameters: dict[str, Matrix2D]) -> tuple[Matrix2D, dict[str, Matrix2D]]:
+def _forward_propagation(X: Matrix2D, parameters: Dict[str, Matrix2D]) -> Tuple[Matrix2D, Dict[str, Matrix2D]]:
     W1 = parameters["W1"]
     B1 = parameters["B1"]
     W2 = parameters["W2"]
@@ -67,7 +69,7 @@ def _calculate_cost(Y_hat, Y: Matrix2D) -> float:
     return cost
 
 
-def _calculate_accuracy(X, Y: Matrix2D, parameters: dict[str, Matrix2D]) -> float:
+def _calculate_accuracy(X, Y: Matrix2D, parameters: Dict[str, Matrix2D]) -> float:
     Y_shape = shape(Y)
     Y_hat, _ = _forward_propagation(X, parameters)
     num_examples = Y_shape[1]
@@ -75,7 +77,7 @@ def _calculate_accuracy(X, Y: Matrix2D, parameters: dict[str, Matrix2D]) -> floa
     return num_correct / num_examples
 
 
-def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]) -> dict[str, Matrix2D]:
+def _backward_propagation(X, Y: Matrix2D, parameters, cache: Dict[str, Matrix2D]) -> Dict[str, Matrix2D]:
     X_shape = shape(X)
 
     batch_size = X_shape[1]
@@ -133,7 +135,7 @@ def _backward_propagation(X, Y: Matrix2D, parameters, cache: dict[str, Matrix2D]
     return gradients
 
 
-def _update_parameters(parameters, gradients: dict[str, Matrix2D], learning_rate: float) -> dict[str, Matrix2D]:
+def _update_parameters(parameters, gradients: Dict[str, Matrix2D], learning_rate: float) -> Dict[str, Matrix2D]:
     updated_parameters = {}
     for param in ("W1", "B1", "W2", "B2", "W3", "B3"):
         updated_parameters[param] = minus(parameters[param],

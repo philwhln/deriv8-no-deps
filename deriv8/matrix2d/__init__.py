@@ -1,8 +1,9 @@
 import random
 from math import exp, log
+from typing import List, Tuple
 
-Matrix2D = list[list[float]]
-Shape2D = tuple[int, int]
+Matrix2D = List[List[float]]
+Shape2D = Tuple[int, int]
 
 
 def matrix_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
@@ -44,7 +45,7 @@ def broadcast(A: Matrix2D, to_shape: Shape2D) -> Matrix2D:
     raise Exception("Unexpected for A_shape:{} to_shape:{}".format(A_shape, to_shape))
 
 
-def broadcast_A_or_B(A, B: Matrix2D) -> tuple[Matrix2D, Matrix2D]:
+def broadcast_A_or_B(A, B: Matrix2D) -> Tuple[Matrix2D, Matrix2D]:
     A_shape = shape(A)
     B_shape = shape(B)
 

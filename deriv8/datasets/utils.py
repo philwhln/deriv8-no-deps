@@ -1,10 +1,11 @@
 from math import floor
 from random import shuffle
+from typing import List, Tuple
 
 from deriv8.matrix2d import Matrix2D, shape
 
 
-def shuffle_dataset(X, Y: Matrix2D, truncate=None) -> tuple[Matrix2D, Matrix2D]:
+def shuffle_dataset(X, Y: Matrix2D, truncate=None) -> Tuple[Matrix2D, Matrix2D]:
     assert shape(X)[1] == shape(Y)[1], "X and Y should have the same number of columns (training examples)"
 
     index = list(range(shape(X)[1]))
@@ -18,7 +19,7 @@ def shuffle_dataset(X, Y: Matrix2D, truncate=None) -> tuple[Matrix2D, Matrix2D]:
 
 
 # split A in batch_size batches, split by cols
-def split_into_batches(A, batch_size) -> list[Matrix2D]:
+def split_into_batches(A, batch_size) -> List[Matrix2D]:
     A_shape = shape(A)
     num_batches = floor(A_shape[1] / batch_size)
     overflow = A_shape[1] - (num_batches * batch_size)

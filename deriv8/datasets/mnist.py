@@ -2,13 +2,14 @@ import gzip
 import struct
 
 from pathlib import Path
+from typing import Tuple
 
 from deriv8.matrix2d import Matrix2D, minus, element_multiply
 
 MAX_ITEMS = 60000
 
 
-def load() -> tuple[Matrix2D, Matrix2D, Matrix2D, Matrix2D]:
+def load() -> Tuple[Matrix2D, Matrix2D, Matrix2D, Matrix2D]:
     path = Path(__file__).parent.parent.parent / 'datasets' / 'mnist'
     train_images = _load_images(path / 't10k-images-idx3-ubyte.gz')
     train_labels = _load_labels(path / 't10k-labels-idx1-ubyte.gz')
