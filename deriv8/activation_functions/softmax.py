@@ -1,7 +1,7 @@
-from deriv8.matrix2d import Matrix2D, element_exp, minus, shape, zeros
+from deriv8.matrix2d import Tensor2D, element_exp, minus, shape, zeros
 
 
-def softmax(Z: Matrix2D, stable=True) -> Matrix2D:
+def softmax(Z: Tensor2D, stable=True) -> Tensor2D:
     Z_shape = shape(Z)
 
     if stable:

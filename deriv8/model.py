@@ -4,12 +4,12 @@ from copy import deepcopy
 from typing import Dict, List, Tuple, NoReturn
 
 from deriv8.datasets.utils import shuffle_dataset, split_into_batches
-from deriv8.matrix2d import (Matrix2D, add, argmax, divide, element_equals, element_multiply, l2_norm,
+from deriv8.matrix2d import (Tensor2D, add, argmax, divide, element_equals, element_multiply, l2_norm,
                              matrix_multiply, minus, rand, shape, sum_all, sum_rows, transpose, zeros)
 from deriv8.loss_functions import multinomial_logistic
 from deriv8.activation_functions import relu, softmax
 
-Parameters = Dict[str, Matrix2D]
+Parameters = Dict[str, Tensor2D]
 
 DEBUG = os.environ.get("DEBUG", "0") == "1"
 
@@ -23,17 +23,17 @@ def init_parameters(input_num_units: int, layers_num_units: List[int]) -> Parame
     return parameters
 
 
-def _init_layer_weights(fan_in: int, fan_out: int) -> Matrix2D:
+def _init_layer_weights(fan_in: int, fan_out: int) -> Tensor2D:
     # random numbers between -1 and 1 in a (fan_out x fan_in) size matrix
     return rand(fan_out, fan_in)
 
 
-def _init_layer_biases(fan_out: int) -> Matrix2D:
+def _init_layer_biases(fan_out: int) -> Tensor2D:
     # zeros in a (fan_out x 1) size matrix
     return zeros(fan_out, 1)
 
 
-def _forward_propagation(X: Matrix2D, parameters: Parameters) -> Tuple[Matrix2D, Parameters]:
+def _forward_propagation(X: Tensor2D, parameters: Parameters) -> Tuple[Tensor2D, Parameters]:
     W1 = parameters["W1"]
     B1 = parameters["B1"]
     W2 = parameters["W2"]
@@ -63,7 +63,7 @@ def _forward_propagation(X: Matrix2D, parameters: Parameters) -> Tuple[Matrix2D,
     return A3, cache
 
 
-def _calculate_cost(Y_hat, Y: Matrix2D) -> float:
+def _calculate_cost(Y_hat, Y: Tensor2D) -> float:
     loss = multinomial_logistic.loss(Y_hat, Y)
     # average loss
     batch_size = shape(Y)[1]
@@ -71,7 +71,7 @@ def _calculate_cost(Y_hat, Y: Matrix2D) -> float:
     return cost
 
 
-def _calculate_accuracy(X, Y: Matrix2D, parameters: Parameters) -> float:
+def _calculate_accuracy(X, Y: Tensor2D, parameters: Parameters) -> float:
     Y_shape = shape(Y)
     Y_hat, _ = _forward_propagation(X, parameters)
     num_examples = Y_shape[1]
@@ -79,7 +79,7 @@ def _calculate_accuracy(X, Y: Matrix2D, parameters: Parameters) -> float:
     return num_correct / num_examples
 
 
-def _single_param_numerical_gradient(X, Y: Matrix2D, parameters: Parameters, param_name: str, i, j: int,
+def _single_param_numerical_gradient(X, Y: Tensor2D, parameters: Parameters, param_name: str, i, j: int,
                                      epsilon: float) -> float:
     orig_param_value = parameters[param_name][i][j]
 
@@ -94,7 +94,7 @@ def _single_param_numerical_gradient(X, Y: Matrix2D, parameters: Parameters, par
     return (plus_epsilon_cost - minus_epsilon_cost) / (2 * epsilon)
 
 
-def _params_to_single_vector(parameters: Parameters) -> Matrix2D:
+def _params_to_single_vector(parameters: Parameters) -> Tensor2D:
     size = 0
     for param_values in parameters.values():
         param_shape = shape(param_values)
@@ -115,7 +115,7 @@ def _params_to_single_vector(parameters: Parameters) -> Matrix2D:
     return vector
 
 
-def _check_gradients(X, Y: Matrix2D, parameters: Parameters, gradients: Parameters):
+def _check_gradients(X, Y: Tensor2D, parameters: Parameters, gradients: Parameters):
     epsilon = 1e-7
     parameters_ = deepcopy(parameters)
     numerical_gradients = {}
@@ -142,7 +142,7 @@ def _check_gradients(X, Y: Matrix2D, parameters: Parameters, gradients: Paramete
         print("Gradient check passed delta={}".format(delta))
 
 
-def _backward_propagation(X, Y: Matrix2D, parameters, cache: Parameters) -> Parameters:
+def _backward_propagation(X, Y: Tensor2D, parameters, cache: Parameters) -> Parameters:
     X_shape = shape(X)
 
     batch_size = X_shape[1]
@@ -208,7 +208,7 @@ def _update_parameters(parameters, gradients: Parameters, learning_rate: float) 
     return updated_parameters
 
 
-def _train_one_mini_batch(X_train_batch, Y_train_batch: Matrix2D, learning_rate: float, parameters: Parameters) \
+def _train_one_mini_batch(X_train_batch, Y_train_batch: Tensor2D, learning_rate: float, parameters: Parameters) \
         -> Tuple[float, Parameters, float]:
     Y_hat, cache = _forward_propagation(X_train_batch, parameters)
     loss = _calculate_cost(Y_hat, Y_train_batch)
@@ -220,7 +220,7 @@ def _train_one_mini_batch(X_train_batch, Y_train_batch: Matrix2D, learning_rate:
     return loss, parameters, train_accuracy
 
 
-def _train_one_epoch(X_train_batches, Y_train_batches: Matrix2D, parameters: Parameters,
+def _train_one_epoch(X_train_batches, Y_train_batches: Tensor2D, parameters: Parameters,
                      learning_rate: float) -> Parameters:
     total_batches = len(X_train_batches)
     trained_examples = 0
@@ -243,7 +243,7 @@ def _train_one_epoch(X_train_batches, Y_train_batches: Matrix2D, parameters: Par
     return parameters
 
 
-def train(X_train, Y_train, X_test, Y_test: Matrix2D, parameters: Parameters, epochs, batch_size: int,
+def train(X_train, Y_train, X_test, Y_test: Tensor2D, parameters: Parameters, epochs, batch_size: int,
           learning_rate: float) -> NoReturn:
     X_train, Y_train = shuffle_dataset(X_train, Y_train)
     X_train_batches = split_into_batches(X_train, batch_size)

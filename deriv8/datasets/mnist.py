@@ -4,12 +4,12 @@ import struct
 from pathlib import Path
 from typing import Tuple
 
-from deriv8.matrix2d import Matrix2D, minus, element_multiply
+from deriv8.matrix2d import Tensor2D, minus, element_multiply
 
 MAX_ITEMS = 60000
 
 
-def load() -> Tuple[Matrix2D, Matrix2D, Matrix2D, Matrix2D]:
+def load() -> Tuple[Tensor2D, Tensor2D, Tensor2D, Tensor2D]:
     path = Path(__file__).parent.parent.parent / 'datasets' / 'mnist'
     train_images = _load_images(path / 't10k-images-idx3-ubyte.gz')
     train_labels = _load_labels(path / 't10k-labels-idx1-ubyte.gz')
@@ -18,11 +18,11 @@ def load() -> Tuple[Matrix2D, Matrix2D, Matrix2D, Matrix2D]:
     return train_images, train_labels, test_images, test_labels
 
 
-def normalize_inputs(X: Matrix2D) -> Matrix2D:
+def normalize_inputs(X: Tensor2D) -> Tensor2D:
     return minus(element_multiply(X, [[1. / 255.]]), [[0.5]])
 
 
-def _load_images(path: Path) -> Matrix2D:
+def _load_images(path: Path) -> Tensor2D:
     with gzip.open(path, 'rb') as f:
         magic, num_images, rows, cols = struct.unpack('>IIII', f.read(16))
 
@@ -42,7 +42,7 @@ def _load_images(path: Path) -> Matrix2D:
     return images
 
 
-def _load_labels(path: Path) -> Matrix2D:
+def _load_labels(path: Path) -> Tensor2D:
     with gzip.open(path, 'rb') as f:
         magic, num_labels = struct.unpack('>II', f.read(8))
 

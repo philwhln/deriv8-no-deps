@@ -2,12 +2,11 @@ import random
 from math import exp, log, sqrt
 from typing import List, Tuple
 
-# TODO: Rename to Tensor2D
-Matrix2D = List[List[float]]
+Tensor2D = List[List[float]]
 Shape2D = Tuple[int, int]
 
 
-def matrix_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
+def matrix_multiply(A: Tensor2D, B: Tensor2D) -> Tensor2D:
     A_shape = shape(A)
     B_shape = shape(B)
     assert A_shape[1] == B_shape[0], \
@@ -25,7 +24,7 @@ def matrix_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
 
 
 # naive broadcasting
-def broadcast(A: Matrix2D, to_shape: Shape2D) -> Matrix2D:
+def broadcast(A: Tensor2D, to_shape: Shape2D) -> Tensor2D:
     A_shape = shape(A)
 
     assert (A_shape == (1, 1)) or \
@@ -46,7 +45,7 @@ def broadcast(A: Matrix2D, to_shape: Shape2D) -> Matrix2D:
     raise Exception("Unexpected for A_shape:{} to_shape:{}".format(A_shape, to_shape))
 
 
-def broadcast_A_or_B(A, B: Matrix2D) -> Tuple[Matrix2D, Matrix2D]:
+def broadcast_A_or_B(A, B: Tensor2D) -> Tuple[Tensor2D, Tensor2D]:
     A_shape = shape(A)
     B_shape = shape(B)
 
@@ -66,7 +65,7 @@ def broadcast_A_or_B(A, B: Matrix2D) -> Tuple[Matrix2D, Matrix2D]:
         return A, broadcast(B, to_shape)
 
 
-def add(A: Matrix2D, B: Matrix2D) -> Matrix2D:
+def add(A: Tensor2D, B: Tensor2D) -> Tensor2D:
     A_, B_ = broadcast_A_or_B(A, B)
 
     C_shape = shape(A_)
@@ -79,7 +78,7 @@ def add(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
-def minus(A: Matrix2D, B: Matrix2D) -> Matrix2D:
+def minus(A: Tensor2D, B: Tensor2D) -> Tensor2D:
     A_, B_ = broadcast_A_or_B(A, B)
 
     C_shape = shape(A_)
@@ -92,7 +91,7 @@ def minus(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
-def divide(A: Matrix2D, B: Matrix2D) -> Matrix2D:
+def divide(A: Tensor2D, B: Tensor2D) -> Tensor2D:
     A_, B_ = broadcast_A_or_B(A, B)
 
     C_shape = shape(A_)
@@ -105,11 +104,11 @@ def divide(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
-def negate(A: Matrix2D) -> Matrix2D:
+def negate(A: Tensor2D) -> Tensor2D:
     return [[-Aij for Aij in Ai] for Ai in A]
 
 
-def argmax(A: Matrix2D) -> Matrix2D:
+def argmax(A: Tensor2D) -> Tensor2D:
     A_shape = shape(A)
     A_max = zeros(1, A_shape[1])
     A_argmax = zeros(1, A_shape[1])
@@ -123,7 +122,7 @@ def argmax(A: Matrix2D) -> Matrix2D:
     return A_argmax
 
 
-def element_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
+def element_multiply(A: Tensor2D, B: Tensor2D) -> Tensor2D:
     A_, B_ = broadcast_A_or_B(A, B)
 
     C_shape = shape(A_)
@@ -139,7 +138,7 @@ def element_multiply(A: Matrix2D, B: Matrix2D) -> Matrix2D:
 # Even though mathematically a.log(b) will be zero when a and b are both zero, we'll still be evaluating
 # log(b) and log(0) causes "ValueError: math domain error". This function combines both, to skip the log(b)
 # evaluation when a is zero.
-def element_multiply_log(A: Matrix2D, B: Matrix2D) -> Matrix2D:
+def element_multiply_log(A: Tensor2D, B: Tensor2D) -> Tensor2D:
     A_, B_ = broadcast_A_or_B(A, B)
 
     C_shape = shape(A_)
@@ -155,7 +154,7 @@ def element_multiply_log(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
-def element_equals(A: Matrix2D, B: Matrix2D) -> Matrix2D:
+def element_equals(A: Tensor2D, B: Tensor2D) -> Tensor2D:
     A_, B_ = broadcast_A_or_B(A, B)
 
     C_shape = shape(A_)
@@ -168,15 +167,15 @@ def element_equals(A: Matrix2D, B: Matrix2D) -> Matrix2D:
     return C
 
 
-def element_exp(A: Matrix2D) -> Matrix2D:
+def element_exp(A: Tensor2D) -> Tensor2D:
     return [[exp(Aij) for Aij in Ai] for Ai in A]
 
 
-def element_log(A: Matrix2D) -> Matrix2D:
+def element_log(A: Tensor2D) -> Tensor2D:
     return [[log(Aij) for Aij in Ai] for Ai in A]
 
 
-def l2_norm(A: Matrix2D) -> float:
+def l2_norm(A: Tensor2D) -> float:
     A_shape = shape(A)
 
     # assumes a single column vector
@@ -189,7 +188,7 @@ def l2_norm(A: Matrix2D) -> float:
     return sqrt(sq_sums)
 
 
-def one_hot_encode(A: Matrix2D, labels: list) -> Matrix2D:
+def one_hot_encode(A: Tensor2D, labels: list) -> Tensor2D:
     A_shape = shape(A)
     assert A_shape[0] == 1
 
@@ -204,21 +203,21 @@ def one_hot_encode(A: Matrix2D, labels: list) -> Matrix2D:
     return B
 
 
-def rand(rows: int, cols: int) -> Matrix2D:
+def rand(rows: int, cols: int) -> Tensor2D:
     return [[random.uniform(-0.5, 0.5) for i in range(cols)] for j in range(rows)]
 
 
-def shape(A: Matrix2D) -> Shape2D:
+def shape(A: Tensor2D) -> Shape2D:
     rows = len(A)
     cols = len(A[0])  # assume all rows are equal length
     return rows, cols
 
 
-def sum_rows(A: Matrix2D) -> Matrix2D:
+def sum_rows(A: Tensor2D) -> Tensor2D:
     return [[sum(row)] for row in A]
 
 
-def sum_cols(A: Matrix2D) -> Matrix2D:
+def sum_cols(A: Tensor2D) -> Tensor2D:
     A_shape = shape(A)
     B = zeros(1, A_shape[1])
 
@@ -229,11 +228,11 @@ def sum_cols(A: Matrix2D) -> Matrix2D:
     return B
 
 
-def sum_all(A: Matrix2D) -> float:
+def sum_all(A: Tensor2D) -> float:
     return sum(sum(row) for row in A)
 
 
-def transpose(A: Matrix2D) -> Matrix2D:
+def transpose(A: Tensor2D) -> Tensor2D:
     A_shape = shape(A)
     A_transposed = zeros(*reversed(A_shape))
     for i in range(A_shape[0]):
@@ -242,5 +241,5 @@ def transpose(A: Matrix2D) -> Matrix2D:
     return A_transposed
 
 
-def zeros(rows: int, cols: int) -> Matrix2D:
+def zeros(rows: int, cols: int) -> Tensor2D:
     return [[0. for i in range(cols)] for j in range(rows)]
