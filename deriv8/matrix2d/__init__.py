@@ -1,7 +1,8 @@
 import random
-from math import exp, log
+from math import exp, log, sqrt
 from typing import List, Tuple
 
+# TODO: Rename to Tensor2D
 Matrix2D = List[List[float]]
 Shape2D = Tuple[int, int]
 
@@ -173,6 +174,19 @@ def element_exp(A: Matrix2D) -> Matrix2D:
 
 def element_log(A: Matrix2D) -> Matrix2D:
     return [[log(Aij) for Aij in Ai] for Ai in A]
+
+
+def l2_norm(A: Matrix2D) -> float:
+    A_shape = shape(A)
+
+    # assumes a single column vector
+    assert A_shape[1] == 1
+
+    sq_sums = 0.
+    for i in range(A_shape[0]):
+        sq_sums += A[i][0] ** 2.
+
+    return sqrt(sq_sums)
 
 
 def one_hot_encode(A: Matrix2D, labels: list) -> Matrix2D:

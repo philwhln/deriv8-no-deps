@@ -1,10 +1,10 @@
-from math import exp
+from math import exp, sqrt
 
 import pytest
 
 from deriv8.matrix2d import (add, divide, element_equals, element_exp, element_log, element_multiply,
-                             element_multiply_log, matrix_multiply, minus, negate, one_hot_encode, shape, sum_all,
-                             sum_cols, sum_rows, transpose)
+                             element_multiply_log, l2_norm, matrix_multiply, minus, negate, one_hot_encode,
+                             shape, sum_all, sum_cols, sum_rows, transpose)
 
 
 @pytest.mark.parametrize("matrix, expected_shape", [
@@ -110,6 +110,13 @@ def test_element_log(A, expected):
 ])
 def test_element_multiply_log(A, B, expected):
     assert element_multiply_log(A, B) == expected
+
+
+@pytest.mark.parametrize("A, expected", [
+    ([[6.], [8.], [4.], [2.], [4.], [6.]], sqrt(172.)),
+])
+def test_flattened_l2_norm(A, expected):
+    assert l2_norm(A) == expected
 
 
 @pytest.mark.parametrize("A, labels, expected", [

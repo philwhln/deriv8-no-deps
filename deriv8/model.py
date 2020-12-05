@@ -1,17 +1,17 @@
 import os
 import time
-
-from typing import Dict, List, Tuple
+from copy import deepcopy
+from typing import Dict, List, Tuple, NoReturn
 
 from deriv8.datasets.utils import shuffle_dataset, split_into_batches
-from deriv8.matrix2d import (Matrix2D, add, argmax, element_equals, element_multiply, matrix_multiply, minus, rand,
-                             shape, sum_all, sum_rows, transpose, zeros)
+from deriv8.matrix2d import (Matrix2D, add, argmax, divide, element_equals, element_multiply, l2_norm,
+                             matrix_multiply, minus, rand, shape, sum_all, sum_rows, transpose, zeros)
 from deriv8.loss_functions import multinomial_logistic
 from deriv8.activation_functions import relu, softmax
 
 Parameters = Dict[str, Matrix2D]
 
-DEBUG = bool(os.environ.get("DEBUG", False))
+DEBUG = os.environ.get("DEBUG", "0") == "1"
 
 
 def init_parameters(input_num_units: int, layers_num_units: List[int]) -> Parameters:
@@ -77,6 +77,69 @@ def _calculate_accuracy(X, Y: Matrix2D, parameters: Parameters) -> float:
     num_examples = Y_shape[1]
     num_correct = sum_all(element_equals(argmax(Y_hat), argmax(Y)))
     return num_correct / num_examples
+
+
+def _single_param_numerical_gradient(X, Y: Matrix2D, parameters: Parameters, param_name: str, i, j: int,
+                                     epsilon: float) -> float:
+    orig_param_value = parameters[param_name][i][j]
+
+    parameters[param_name][i][j] = orig_param_value - epsilon
+    Y_hat, cache = _forward_propagation(X, parameters)
+    minus_epsilon_cost = _calculate_cost(Y_hat, Y)
+
+    parameters[param_name][i][j] = orig_param_value + epsilon
+    Y_hat, cache = _forward_propagation(X, parameters)
+    plus_epsilon_cost = _calculate_cost(Y_hat, Y)
+
+    return (plus_epsilon_cost - minus_epsilon_cost) / (2 * epsilon)
+
+
+def _params_to_single_vector(parameters: Parameters) -> Matrix2D:
+    size = 0
+    for param_values in parameters.values():
+        param_shape = shape(param_values)
+        size += param_shape[0] * param_shape[1]
+
+    vector = zeros(size, 1)
+
+    offset = 0
+    for param_name in sorted(parameters.keys()):
+        param_values = parameters[param_name]
+        param_shape = shape(param_values)
+        for i in range(param_shape[0]):
+            for j in range(param_shape[1]):
+                index = offset + (j * param_shape[0]) + i
+                vector[index][0] = param_values[i][j]
+        offset += param_shape[0] * param_shape[1]
+
+    return vector
+
+
+def _check_gradients(X, Y: Matrix2D, parameters: Parameters, gradients: Parameters):
+    epsilon = 1e-7
+    parameters_ = deepcopy(parameters)
+    numerical_gradients = {}
+    for param_name, param_values in parameters_.items():
+        print("Calculating numeric gradients for {}".format(param_name))
+        param_shape = shape(param_values)
+        numerical_gradients[param_name] = zeros(*param_shape)
+        for i in range(param_shape[0]):
+            for j in range(param_shape[1]):
+                numerical_gradients[param_name][i][j] = _single_param_numerical_gradient(X, Y, parameters_, param_name,
+                                                                                         i, j, epsilon)
+
+    gradients_vector = _params_to_single_vector(gradients)
+    numerical_gradients_vector = _params_to_single_vector(numerical_gradients)
+
+    assert shape(gradients_vector) == shape(numerical_gradients_vector)
+
+    delta = l2_norm(minus(numerical_gradients_vector, gradients_vector)) / (
+            l2_norm(numerical_gradients_vector) + l2_norm(gradients_vector))
+
+    if delta > epsilon:
+        print("Gradient check failed delta={} > {} !!!!!".format(delta, epsilon))
+    else:
+        print("Gradient check passed delta={}".format(delta))
 
 
 def _backward_propagation(X, Y: Matrix2D, parameters, cache: Parameters) -> Parameters:
@@ -145,16 +208,20 @@ def _update_parameters(parameters, gradients: Parameters, learning_rate: float) 
     return updated_parameters
 
 
-def _train_one_mini_batch(X_train_batch, Y_train_batch, learning_rate, parameters):
+def _train_one_mini_batch(X_train_batch, Y_train_batch: Matrix2D, learning_rate: float, parameters: Parameters) \
+        -> Tuple[float, Parameters, float]:
     Y_hat, cache = _forward_propagation(X_train_batch, parameters)
     loss = _calculate_cost(Y_hat, Y_train_batch)
     train_accuracy = _calculate_accuracy(X_train_batch, Y_train_batch, parameters)
     gradients = _backward_propagation(X_train_batch, Y_train_batch, parameters, cache)
+    if DEBUG:
+        _check_gradients(X_train_batch, Y_train_batch, parameters, gradients)
     parameters = _update_parameters(parameters, gradients, learning_rate)
     return loss, parameters, train_accuracy
 
 
-def _train_one_epoch(X_train_batches, Y_train_batches, parameters, learning_rate):
+def _train_one_epoch(X_train_batches, Y_train_batches: Matrix2D, parameters: Parameters,
+                     learning_rate: float) -> Parameters:
     total_batches = len(X_train_batches)
     trained_examples = 0
     for batch_index in range(len(X_train_batches)):
@@ -173,10 +240,11 @@ def _train_one_epoch(X_train_batches, Y_train_batches, parameters, learning_rate
         print(" batch: {}/{}  training loss: {:0.2f}  train accuracy: {:0.2f}%  duration: {:0.2f}s"
               .format(batch_index + 1, total_batches, loss, train_accuracy * 100., batch_duration))
 
-    return loss, parameters
+    return parameters
 
 
-def train(X_train, Y_train, X_test, Y_test, parameters, epochs, batch_size, learning_rate):
+def train(X_train, Y_train, X_test, Y_test: Matrix2D, parameters: Parameters, epochs, batch_size: int,
+          learning_rate: float) -> NoReturn:
     X_train, Y_train = shuffle_dataset(X_train, Y_train)
     X_train_batches = split_into_batches(X_train, batch_size)
     Y_train_batches = split_into_batches(Y_train, batch_size)
@@ -185,9 +253,9 @@ def train(X_train, Y_train, X_test, Y_test, parameters, epochs, batch_size, lear
         print("epoch: {}".format(epoch))
         epoch_start_time = time.time()
 
-        loss, parameters = _train_one_epoch(X_train_batches, Y_train_batches, parameters, learning_rate)
+        parameters = _train_one_epoch(X_train_batches, Y_train_batches, parameters, learning_rate)
 
         test_accuracy = _calculate_accuracy(X_test, Y_test, parameters)
 
-        print(" training loss: {:0.2f}  test accuracy: {:0.2f}%  duration: {:0.2f}s"
-              .format(loss, test_accuracy * 100., time.time() - epoch_start_time))
+        print(" test accuracy: {:0.2f}%  duration: {:0.2f}s"
+              .format(test_accuracy * 100., time.time() - epoch_start_time))
