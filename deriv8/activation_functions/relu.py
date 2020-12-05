@@ -6,4 +6,4 @@ def relu(A: Tensor2D) -> Tensor2D:
 
 
 def relu_derivative(Z: Tensor2D):
-    return [[1. if Zij > 0. else 1. for Zij in Zi] for Zi in Z]
+    return [[1. if Zij > 0. else 0. for Zij in Zi] for Zi in Z]
