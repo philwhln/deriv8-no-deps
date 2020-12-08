@@ -149,7 +149,11 @@ def element_multiply_log(A: Tensor2D, B: Tensor2D) -> Tensor2D:
             if A_[i][j] == 0.:
                 C[i][j] = 0.
             else:
-                C[i][j] = A_[i][j] * log(B_[i][j])
+                try:
+                    C[i][j] = A_[i][j] * log(B_[i][j])
+                except ValueError:
+                    print("B_[i][j]={}".format(B_[i][j]))
+                    raise
 
     return C
 
