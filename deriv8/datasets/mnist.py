@@ -24,7 +24,7 @@ def normalize_inputs(X: Tensor2D) -> Tensor2D:
 
 def _load_images(path: Path) -> Tensor2D:
     with gzip.open(path, 'rb') as f:
-        magic, num_images, rows, cols = struct.unpack('>IIII', f.read(16))
+        magic, num_images, rows, cols = struct.unpack('>4I', f.read(16))
 
         # should get values specified here http://yann.lecun.com/exdb/mnist/
         assert magic == 2051
@@ -35,9 +35,18 @@ def _load_images(path: Path) -> Tensor2D:
         num_pixels = rows * cols
         num_images = min(num_images, MAX_ITEMS)
         images = [
-            list(map(float, struct.unpack('>{}b'.format(num_pixels), f.read(num_pixels))))
+            list(map(float, struct.unpack('>{}B'.format(num_pixels), f.read(num_pixels))))
             for _ in range(num_images)
         ]
+
+    # verify data looks appropriate
+    for img in images:
+        for p in img:
+            try:
+                assert 0. <= p <= 255.
+            except AssertionError:
+                print("{} is not a valid pixel value".format(p))
+                raise
 
     return images
 
