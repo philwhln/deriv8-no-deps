@@ -11,10 +11,10 @@ MAX_ITEMS = 60000
 
 def load() -> Tuple[Tensor2D, Tensor2D, Tensor2D, Tensor2D]:
     path = Path(__file__).parent.parent.parent / 'datasets' / 'mnist'
-    train_images = _load_images(path / 't10k-images-idx3-ubyte.gz')
-    train_labels = _load_labels(path / 't10k-labels-idx1-ubyte.gz')
-    test_images = _load_images(path / 'train-images-idx3-ubyte.gz')
-    test_labels = _load_labels(path / 'train-labels-idx1-ubyte.gz')
+    train_images = _load_images(path / 'train-images-idx3-ubyte.gz')
+    train_labels = _load_labels(path / 'train-labels-idx1-ubyte.gz')
+    test_images = _load_images(path / 't10k-images-idx3-ubyte.gz')
+    test_labels = _load_labels(path / 't10k-labels-idx1-ubyte.gz')
     return train_images, train_labels, test_images, test_labels
 
 

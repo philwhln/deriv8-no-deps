@@ -3,7 +3,7 @@ import time
 from copy import deepcopy
 from typing import Dict, List, Tuple, NoReturn
 
-from deriv8.datasets.utils import shuffle_dataset, split_into_batches
+from deriv8.datasets.utils import shuffle_truncate_dataset, split_into_batches
 from deriv8.matrix2d import (Tensor2D, add, argmax, divide, element_equals, element_multiply, l2_norm,
                              matrix_multiply, minus, rand, shape, sum_all, sum_rows, transpose, zeros)
 from deriv8.loss_functions import multinomial_logistic
@@ -247,17 +247,18 @@ def _train_one_epoch(X_train_batches, Y_train_batches: Tensor2D, parameters: Par
 
 def train(X_train, Y_train, X_test, Y_test: Tensor2D, parameters: Parameters, epochs, batch_size: int,
           learning_rate: float) -> NoReturn:
-    X_train, Y_train = shuffle_dataset(X_train, Y_train)
+    X_train, Y_train = shuffle_truncate_dataset(X_train, Y_train)
     X_train_batches = split_into_batches(X_train, batch_size)
     Y_train_batches = split_into_batches(Y_train, batch_size)
-    print("Training")
+    print("Training {} mini-batches of size {} for {} epochs".format(len(X_train_batches), batch_size, epochs))
     for epoch in range(epochs):
         print("epoch: {}".format(epoch))
         epoch_start_time = time.time()
 
         parameters = _train_one_epoch(X_train_batches, Y_train_batches, parameters, learning_rate)
 
+        test_start_time = time.time()
         test_accuracy = _calculate_accuracy(X_test, Y_test, parameters)
 
-        print(" test accuracy: {:0.2f}%  duration: {:0.2f}s"
-              .format(test_accuracy * 100., time.time() - epoch_start_time))
+        print(" test accuracy: {:0.2f}%  duration: {:0.2f}s (test: {:0.2f}s)"
+              .format(test_accuracy * 100., time.time() - epoch_start_time, time.time() - epoch_start_time))

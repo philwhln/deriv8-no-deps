@@ -5,7 +5,7 @@ from typing import List, Tuple
 from deriv8.matrix2d import Tensor2D, shape
 
 
-def shuffle_dataset(X, Y: Tensor2D, truncate=None) -> Tuple[Tensor2D, Tensor2D]:
+def shuffle_truncate_dataset(X, Y: Tensor2D, truncate=None) -> Tuple[Tensor2D, Tensor2D]:
     assert shape(X)[1] == shape(Y)[1], "X and Y should have the same number of columns (training examples)"
 
     index = list(range(shape(X)[1]))

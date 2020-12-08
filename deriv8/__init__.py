@@ -1,4 +1,4 @@
-from .datasets.utils import shuffle_dataset
+from .datasets.utils import shuffle_truncate_dataset
 from .matrix2d import one_hot_encode, shape, transpose
 from .datasets import mnist
 from deriv8 import model
@@ -9,12 +9,17 @@ def main():
     batch_size = 100
     hidden_units = 784
     epochs = 10
+    max_training_examples = 600
+    max_test_examples = 100
 
-    print("Loading data")
+    print("Loading data...")
 
     X_train, Y_train, X_test, Y_test = mnist.load()
 
-    print("Preparing data")
+    print("Using {}/{} random training examples and {}/{} random test examples"
+          .format(max_training_examples, shape(X_train)[0], max_test_examples, shape(X_test)[0]))
+
+    print("Preparing data...")
 
     # We want examples stacked in columns, not rows
     X_train = transpose(X_train)
@@ -23,8 +28,8 @@ def main():
     Y_test = transpose(Y_test)
 
     # shuffle and truncate
-    X_train, Y_train = shuffle_dataset(X_train, Y_train, truncate=1000)
-    X_test, Y_test = shuffle_dataset(X_test, Y_test, truncate=100)
+    X_train, Y_train = shuffle_truncate_dataset(X_train, Y_train, truncate=max_training_examples)
+    X_test, Y_test = shuffle_truncate_dataset(X_test, Y_test, truncate=max_test_examples)
 
     labels = list(map(float, range(10)))
 
