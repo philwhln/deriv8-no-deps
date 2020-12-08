@@ -4,7 +4,7 @@ import struct
 from pathlib import Path
 from typing import Tuple
 
-from deriv8.matrix2d import Tensor2D, minus, element_multiply
+from deriv8.matrix2d import Tensor2D, divide
 
 MAX_ITEMS = 60000
 
@@ -19,7 +19,7 @@ def load() -> Tuple[Tensor2D, Tensor2D, Tensor2D, Tensor2D]:
 
 
 def normalize_inputs(X: Tensor2D) -> Tensor2D:
-    return minus(element_multiply(X, [[1. / 255.]]), [[0.5]])
+    return divide(X, [[255.]])
 
 
 def _load_images(path: Path) -> Tensor2D:
