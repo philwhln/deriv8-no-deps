@@ -261,4 +261,4 @@ def train(X_train, Y_train, X_test, Y_test: Tensor2D, parameters: Parameters, ep
         test_accuracy = _calculate_accuracy(X_test, Y_test, parameters)
 
         print(" test accuracy: {:0.2f}%  duration: {:0.2f}s (test: {:0.2f}s)"
-              .format(test_accuracy * 100., time.time() - epoch_start_time, time.time() - epoch_start_time))
+              .format(test_accuracy * 100., time.time() - epoch_start_time, time.time() - test_start_time))
