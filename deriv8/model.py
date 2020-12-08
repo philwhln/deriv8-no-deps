@@ -50,12 +50,12 @@ def _forward_propagation(X: Tensor2D, parameters: Parameters) -> Tuple[Tensor2D,
     A3 = softmax.softmax(Z3)
 
     cache = {
-        "A1": A1,
         "Z1": Z1,
-        "A2": A2,
+        "A1": A1,
         "Z2": Z2,
-        "A3": A3,
+        "A2": A2,
         "Z3": Z3,
+        "A3": A3,
     }
 
     # return predictions (activation of final layer) and cache of values along the way, which will be used for
@@ -157,12 +157,12 @@ def _backward_propagation(X, Y: Tensor2D, parameters, cache: Parameters) -> Para
     B3 = parameters["B3"]
 
     A0 = X
-    A1 = cache["A1"]
     Z1 = cache["Z1"]
-    A2 = cache["A2"]
+    A1 = cache["A1"]
     Z2 = cache["Z2"]
-    A3 = cache["A3"]
+    A2 = cache["A2"]
     Z3 = cache["Z3"]
+    A3 = cache["A3"]
     Y_hat = A3
 
     # Layer 3 (output) derivatives
