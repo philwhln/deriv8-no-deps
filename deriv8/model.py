@@ -91,6 +91,8 @@ def _single_param_numerical_gradient(X, Y: Tensor2D, parameters: Parameters, par
     Y_hat, cache = _forward_propagation(X, parameters)
     plus_epsilon_cost = _calculate_cost(Y_hat, Y)
 
+    parameters[param_name][i][j] = orig_param_value
+
     return (plus_epsilon_cost - minus_epsilon_cost) / (2 * epsilon)
 
 
