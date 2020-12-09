@@ -1,16 +1,18 @@
+from typing import NoReturn
+
+from .datasets import mnist
 from .datasets.utils import shuffle_truncate_dataset
 from .matrix2d import one_hot_encode, shape, transpose
-from .datasets import mnist
 from deriv8 import model
 
 
-def main():
-    learning_rate = 1e-3
-    batch_size = 100
-    hidden_units = 784
-    epochs = 10
-    max_training_examples = 600
-    max_test_examples = 100
+def main() -> NoReturn:
+    learning_rate = 3e-4
+    batch_size = 500
+    hidden_units = 32
+    epochs = 20
+    max_training_examples = 60000
+    max_test_examples = 10000
 
     print("Loading data...")
 
