@@ -4,8 +4,8 @@ from copy import deepcopy
 from typing import Dict, List, Tuple, NoReturn
 
 from deriv8.datasets.utils import shuffle_truncate_dataset, split_into_batches
-from deriv8.matrix2d import (Tensor2D, add, argmax, divide, element_equals, element_multiply, l2_norm,
-                             matrix_multiply, minus, rand, shape, sum_all, sum_rows, transpose, zeros)
+from deriv8.matrix2d import (Tensor2D, add, argmax, element_equals, element_multiply, l2_norm, matrix_multiply, minus,
+                             rand, shape, sum_all, sum_rows, transpose, zeros)
 from deriv8.loss_functions import multinomial_logistic
 from deriv8.activation_functions import relu, softmax
 
@@ -64,10 +64,11 @@ def _forward_propagation(X: Tensor2D, parameters: Parameters) -> Tuple[Tensor2D,
 
 
 def _calculate_cost(Y_hat, Y: Tensor2D) -> float:
-    loss = multinomial_logistic.loss(Y_hat, Y)
-    # average loss
     batch_size = shape(Y)[1]
-    cost = (1. / batch_size) * sum_all(loss)
+    Y_loss = multinomial_logistic.loss(Y_hat, Y)
+    assert shape(Y_loss) == (1, batch_size)
+    # average loss. sum rows and convert to single scalar
+    cost = (1. / batch_size) * sum_all(Y_loss)
     return cost
 
 

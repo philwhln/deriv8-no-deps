@@ -1,4 +1,4 @@
-from deriv8.matrix2d import Tensor2D, negate, element_multiply_log, divide
+from deriv8.matrix2d import Tensor2D, negate, element_multiply_log, sum_cols
 
 
 # Calculate the negative log of predicated probability of correct answer.
@@ -8,4 +8,4 @@ from deriv8.matrix2d import Tensor2D, negate, element_multiply_log, divide
 # Multiplying these together will leave us with just the probability for the correct answer.
 def loss(Y_hat, Y: Tensor2D) -> Tensor2D:
     # Note: element_multiply_log skips evaluating log(y_hat) when y is zero.
-    return negate(element_multiply_log(Y, Y_hat))
+    return negate(sum_cols(element_multiply_log(Y, Y_hat)))
