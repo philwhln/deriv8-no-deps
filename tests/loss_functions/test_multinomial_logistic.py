@@ -21,9 +21,7 @@ huge = 1. / tiny
              [0., 0., 1.],
              [0., 1., 0.]],
             # no loss, since we got perfect answers!
-            [[0., 0., 0.],
-             [0., 0., 0.],
-             [0., 0., 0.]]
+            [[0., 0., 0.]]
     ),
     # 50% correct
     (
@@ -36,9 +34,7 @@ huge = 1. / tiny
              [0.25, 0.25, 0.50],
              [0.25, 0.50, 0.25]],
             # 50% loss
-            [[-log(0.5), 0., 0.],
-             [0., 0., -log(0.5)],
-             [0., -log(0.5), 0.]]
+            [[-log(0.5), -log(0.5), -log(0.5)]]
     ),
     # 100% incorrect
     (
@@ -51,9 +47,7 @@ huge = 1. / tiny
              [almost_1, tiny, tiny],
              [tiny, tiny, almost_1]],
             # loss due to perfectly bad predictions
-            [[-log(tiny), 0., 0.],
-             [0., 0., -log(tiny)],
-             [0., -log(tiny), 0.]]
+            [[-log(tiny), -log(tiny), -log(tiny)]]
     )
 ])
 def test_loss(Y, Y_hat, expected_loss):
