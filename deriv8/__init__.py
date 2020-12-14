@@ -7,7 +7,7 @@ from deriv8 import model
 
 
 def main() -> NoReturn:
-    learning_rate = 3e-2
+    learning_rate = 1e-1
     batch_size = 500
     hidden_units = 32
     epochs = 20
