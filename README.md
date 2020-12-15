@@ -136,6 +136,12 @@ Later I went back to fully understand the derivation and can recommend this two-
 * [What is the derivative of the Softmax Function?](https://www.youtube.com/watch?v=09c7bkxpv9I)
 * [Back propagation through Cross Entropy and Softmax](https://www.youtube.com/watch?v=znqbtL0fRA0)
 
+### ValueError: math domain error
+
+`ValueError: math domain error` and I are now good friends. I've hit this a bunch of times during development,
+mostly due to passing zero to `log`. This is usually indicative of another issue and as I squashed issues, these
+errors went away.
+
 ## Credits
 
 These two courses were probably the most helpful...
