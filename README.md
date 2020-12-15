@@ -29,7 +29,7 @@ _[Image by Josef Steppan - CC BY-SA 4.0](https://en.wikipedia.org/wiki/MNIST_dat
 
 ## Requirements
 
-* Python 3.8.5 of above (only tested on this)
+* Python 3.8.5 or above (only tested on this)
 * Poetry for managing dependencies
 
 ## Dataset
