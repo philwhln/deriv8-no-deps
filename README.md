@@ -88,6 +88,13 @@ It also has a GPU, but wasn't utilized.
 
 No parallelization was implemented in the Python code.
 
+## Unit Tests
+
+Run the unit tests using
+```
+poetry run pytest
+```
+
 ## Optimized For Understanding
 
 This code in the repo has been optimized for understanding over performance. This is especially true when dealing with
