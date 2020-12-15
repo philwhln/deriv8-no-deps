@@ -106,7 +106,7 @@ def test_element_log(A, expected):
 
 
 @pytest.mark.parametrize("A, expected", [
-    ([[exp(2.), exp(3.)], [exp(-10.), exp(123.21)]], [[4., 9.], [100., 11.1]]),
+    ([[2., 3.], [-10., 11.1]], [[4., 9.], [100., 123.21]]),
 ])
 def test_element_sq(A, expected):
     assert element_sq(A) == expected
