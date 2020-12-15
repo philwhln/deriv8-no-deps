@@ -43,6 +43,20 @@ This consists 28 x 28 grayscale (0-255) pixels images and corresponding output l
 
 Used a mini-batch size of 500.
 
+## Setup
+
+Install the dependencies. Although, since this is just Pytest, only really needed if you're running the tests.
+```
+poetry install
+```
+
+Fetch the dataset from http://yann.lecun.com/exdb/mnist/ and store them in `datasets/mnist/`.
+This will download four gzipped files.
+Do not unzip them, since the code reads the zipped version directly.
+```
+make datasets
+```
+
 ## Results
 
 Some results are listed in the [results/](results/) directory, but generally seeing over +90% test accuracy after
