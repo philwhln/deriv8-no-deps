@@ -59,15 +59,14 @@ make datasets
 
 ## Results
 
-Some results are listed in the [results/](results/) directory, but generally seeing over +90% test accuracy after
-6 epochs and maxing out a few percent higher. I haven't run it exhaustively yet.
+Best result after 20 epochs was 93.98% on the test set, although accuracy was still very slowly improving at this point.
 
-Each epoch takes roughly 16-17 minutes to run. This better than I expected, since it's going through 60,000
-images and using rudimentary data types.
+Results are listed in the [results/](results/) directory.
 
-Regularization didn't seem to be needed. I think this due to not running it exhaustively. Although, it may have
-slightly improved training speed (accuracy seem to rise a little quicker). Fairly negligible and this theory may
-have been disproved with more training runs.
+Each epoch takes roughly 16-17 minutes to run, including one minutes test the full test set. This better than I
+expected, since it's going through 60,000 images and using rudimentary data types.
+
+Regularization didn't seem to be needed. I think this due to not running it exhaustively.
 
 ## Hardware
 
