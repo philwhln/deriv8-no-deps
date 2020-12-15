@@ -246,7 +246,7 @@ def _train_one_mini_batch(X_train_batch, Y_train_batch: Tensor2D, learning_rate:
 
 
 def _train_one_epoch(X_train_batches: List[Tensor2D], Y_train_batches: List[Tensor2D], parameters: Parameters,
-                     lamb: float, learning_rate: float) -> Parameters:
+                     learning_rate: float, lamb: float) -> Parameters:
     total_batches = len(X_train_batches)
     trained_examples = 0
     for batch_index in range(len(X_train_batches)):

@@ -6,7 +6,7 @@ from typing import Tuple
 
 from deriv8.matrix2d import Tensor2D, divide
 
-MAX_ITEMS = 2000
+MAX_ITEMS = 60000
 
 
 def load() -> Tuple[Tensor2D, Tensor2D, Tensor2D, Tensor2D]:
