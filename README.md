@@ -57,6 +57,14 @@ Do not unzip them, since the code reads the zipped version directly.
 make datasets
 ```
 
+## Train
+
+```
+poetry run python -m deriv8
+```
+
+Unfortunately there's no saving of the model parameters, yet. Just enjoy the training metrics.
+
 ## Results
 
 Best result after 20 epochs was 93.98% on the test set, although accuracy was still very slowly improving at this point.
