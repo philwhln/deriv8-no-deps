@@ -3,7 +3,7 @@ from math import exp, sqrt
 import pytest
 
 from deriv8.matrix2d import (add, divide, element_equals, element_exp, element_log, element_multiply,
-                             element_multiply_log, l2_norm, matrix_multiply, minus, negate, one_hot_encode,
+                             element_multiply_log, element_sq, l2_norm, matrix_multiply, minus, negate, one_hot_encode,
                              shape, sum_all, sum_cols, sum_rows, transpose)
 
 
@@ -103,6 +103,13 @@ def test_element_exp(A, expected):
 ])
 def test_element_log(A, expected):
     assert element_log(A) == expected
+
+
+@pytest.mark.parametrize("A, expected", [
+    ([[exp(2.), exp(3.)], [exp(-10.), exp(123.21)]], [[4., 9.], [100., 11.1]]),
+])
+def test_element_sq(A, expected):
+    assert element_sq(A) == expected
 
 
 @pytest.mark.parametrize("A, B, expected", [

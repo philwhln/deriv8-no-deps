@@ -5,7 +5,7 @@ from typing import List, Tuple
 from deriv8.matrix2d import Tensor2D, shape
 
 
-def shuffle_truncate_dataset(X, Y: Tensor2D, truncate=None) -> Tuple[Tensor2D, Tensor2D]:
+def shuffle_truncate_dataset(X: Tensor2D, Y: Tensor2D, truncate: int = None) -> Tuple[Tensor2D, Tensor2D]:
     assert shape(X)[1] == shape(Y)[1], "X and Y should have the same number of columns (training examples)"
 
     index = list(range(shape(X)[1]))
@@ -19,7 +19,7 @@ def shuffle_truncate_dataset(X, Y: Tensor2D, truncate=None) -> Tuple[Tensor2D, T
 
 
 # split A in batch_size batches, split by cols
-def split_into_batches(A, batch_size) -> List[Tensor2D]:
+def split_into_batches(A: Tensor2D, batch_size: int) -> List[Tensor2D]:
     A_shape = shape(A)
     num_batches = floor(A_shape[1] / batch_size)
     overflow = A_shape[1] - (num_batches * batch_size)

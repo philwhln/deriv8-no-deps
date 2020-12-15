@@ -4,8 +4,8 @@ from copy import deepcopy
 from typing import Dict, List, Tuple, NoReturn
 
 from deriv8.datasets.utils import shuffle_truncate_dataset, split_into_batches
-from deriv8.matrix2d import (Tensor2D, add, argmax, element_equals, element_multiply, l2_norm, matrix_multiply, minus,
-                             rand, shape, sum_all, sum_rows, transpose, zeros)
+from deriv8.matrix2d import (Tensor2D, add, argmax, element_equals, element_multiply, element_sq, l2_norm,
+                             matrix_multiply, minus, rand, shape, sum_all, sum_rows, transpose, zeros)
 from deriv8.loss_functions import multinomial_logistic
 from deriv8.activation_functions import relu, softmax
 
@@ -63,12 +63,23 @@ def _forward_propagation(X: Tensor2D, parameters: Parameters) -> Tuple[Tensor2D,
     return A3, cache
 
 
-def _calculate_cost(Y_hat, Y: Tensor2D) -> float:
+def _calculate_cost(Y_hat, Y: Tensor2D, parameters: Parameters, lamb: float) -> float:
     batch_size = shape(Y)[1]
     Y_loss = multinomial_logistic.loss(Y_hat, Y)
     assert shape(Y_loss) == (1, batch_size)
     # average loss. sum rows and convert to single scalar
     cost = (1. / batch_size) * sum_all(Y_loss)
+
+    # regularization
+    if lamb != 0.:
+        param_sq_sum = 0.
+        for param_key, param_values in parameters.items():
+            # only do regularization on W, not b, parameters
+            if param_key.startswith('W'):
+                param_sq_sum += sum_all(element_sq(param_values))
+
+        cost += (lamb / (2. * batch_size)) * param_sq_sum
+
     return cost
 
 
@@ -80,17 +91,17 @@ def _calculate_accuracy(X, Y: Tensor2D, parameters: Parameters) -> float:
     return num_correct / num_examples
 
 
-def _single_param_numerical_gradient(X, Y: Tensor2D, parameters: Parameters, param_name: str, i, j: int,
+def _single_param_numerical_gradient(X, Y: Tensor2D, parameters: Parameters, lamb: float, param_name: str, i, j: int,
                                      epsilon: float) -> float:
     orig_param_value = parameters[param_name][i][j]
 
     parameters[param_name][i][j] = orig_param_value - epsilon
     Y_hat, cache = _forward_propagation(X, parameters)
-    minus_epsilon_cost = _calculate_cost(Y_hat, Y)
+    minus_epsilon_cost = _calculate_cost(Y_hat, Y, parameters, lamb)
 
     parameters[param_name][i][j] = orig_param_value + epsilon
     Y_hat, cache = _forward_propagation(X, parameters)
-    plus_epsilon_cost = _calculate_cost(Y_hat, Y)
+    plus_epsilon_cost = _calculate_cost(Y_hat, Y, parameters, lamb)
 
     parameters[param_name][i][j] = orig_param_value
 
@@ -118,7 +129,7 @@ def _params_to_single_vector(parameters: Parameters) -> Tensor2D:
     return vector
 
 
-def _check_gradients(X, Y: Tensor2D, parameters: Parameters, gradients: Parameters):
+def _check_gradients(X, Y: Tensor2D, parameters: Parameters, gradients: Parameters, lamb: float):
     epsilon = 1e-7
     parameters_ = deepcopy(parameters)
     numerical_gradients = {}
@@ -128,8 +139,8 @@ def _check_gradients(X, Y: Tensor2D, parameters: Parameters, gradients: Paramete
         numerical_gradients[param_name] = zeros(*param_shape)
         for i in range(param_shape[0]):
             for j in range(param_shape[1]):
-                numerical_gradients[param_name][i][j] = _single_param_numerical_gradient(X, Y, parameters_, param_name,
-                                                                                         i, j, epsilon)
+                numerical_gradients[param_name][i][j] = _single_param_numerical_gradient(X, Y, parameters_, lamb,
+                                                                                         param_name, i, j, epsilon)
 
     gradients_vector = _params_to_single_vector(gradients)
     numerical_gradients_vector = _params_to_single_vector(numerical_gradients)
@@ -145,7 +156,11 @@ def _check_gradients(X, Y: Tensor2D, parameters: Parameters, gradients: Paramete
         print("Gradient check passed delta={}".format(delta))
 
 
-def _backward_propagation(X, Y: Tensor2D, parameters, cache: Parameters) -> Parameters:
+def _regularization_gradient(lamb: float, batch_size: int, parameter_values: Tensor2D):
+    return element_multiply([[lamb / batch_size]], parameter_values)
+
+
+def _backward_propagation(X, Y: Tensor2D, parameters: Parameters, lamb: float, cache: Parameters) -> Parameters:
     X_shape = shape(X)
 
     batch_size = X_shape[1]
@@ -170,6 +185,8 @@ def _backward_propagation(X, Y: Tensor2D, parameters, cache: Parameters) -> Para
     dZ3 = minus(Y_hat, Y)
     assert shape(dZ3) == shape(Z3)
     dW3 = element_multiply([[1. / batch_size]], matrix_multiply(dZ3, transpose(A2)))
+    if lamb != 0.:
+        dW3 = add(dW3, _regularization_gradient(lamb, batch_size, W3))
     assert shape(dW3) == shape(W3)
     dB3 = element_multiply([[1. / batch_size]], sum_rows(dZ3))
     assert shape(dB3) == shape(B3)
@@ -178,6 +195,8 @@ def _backward_propagation(X, Y: Tensor2D, parameters, cache: Parameters) -> Para
     dZ2 = element_multiply(matrix_multiply(transpose(W3), dZ3), relu.relu_derivative(Z2))
     assert shape(dZ2) == shape(Z2)
     dW2 = element_multiply([[1. / batch_size]], matrix_multiply(dZ2, transpose(A1)))
+    if lamb != 0.:
+        dW2 = add(dW2, _regularization_gradient(lamb, batch_size, W2))
     assert shape(dW2) == shape(W2)
     dB2 = element_multiply([[1. / batch_size]], sum_rows(dZ2))
     assert shape(dB2) == shape(B2)
@@ -186,6 +205,8 @@ def _backward_propagation(X, Y: Tensor2D, parameters, cache: Parameters) -> Para
     dZ1 = element_multiply(matrix_multiply(transpose(W2), dZ2), relu.relu_derivative(Z1))
     assert shape(dZ1) == shape(Z1)
     dW1 = element_multiply([[1. / batch_size]], matrix_multiply(dZ1, transpose(A0)))
+    if lamb != 0.:
+        dW1 = add(dW1, _regularization_gradient(lamb, batch_size, W1))
     assert shape(dW1) == shape(W1)
     dB1 = element_multiply([[1. / batch_size]], sum_rows(dZ1))
     assert shape(dB1) == shape(B1)
@@ -211,20 +232,21 @@ def _update_parameters(parameters, gradients: Parameters, learning_rate: float) 
     return updated_parameters
 
 
-def _train_one_mini_batch(X_train_batch, Y_train_batch: Tensor2D, learning_rate: float, parameters: Parameters) \
+def _train_one_mini_batch(X_train_batch, Y_train_batch: Tensor2D, learning_rate: float, parameters: Parameters,
+                          lamb: float) \
         -> Tuple[float, Parameters, float]:
     Y_hat, cache = _forward_propagation(X_train_batch, parameters)
-    loss = _calculate_cost(Y_hat, Y_train_batch)
+    loss = _calculate_cost(Y_hat, Y_train_batch, parameters, lamb)
     train_accuracy = _calculate_accuracy(X_train_batch, Y_train_batch, parameters)
-    gradients = _backward_propagation(X_train_batch, Y_train_batch, parameters, cache)
+    gradients = _backward_propagation(X_train_batch, Y_train_batch, parameters, lamb, cache)
     if DEBUG:
-        _check_gradients(X_train_batch, Y_train_batch, parameters, gradients)
+        _check_gradients(X_train_batch, Y_train_batch, parameters, gradients, lamb)
     parameters = _update_parameters(parameters, gradients, learning_rate)
     return loss, parameters, train_accuracy
 
 
-def _train_one_epoch(X_train_batches, Y_train_batches: Tensor2D, parameters: Parameters,
-                     learning_rate: float) -> Parameters:
+def _train_one_epoch(X_train_batches: List[Tensor2D], Y_train_batches: List[Tensor2D], parameters: Parameters,
+                     lamb: float, learning_rate: float) -> Parameters:
     total_batches = len(X_train_batches)
     trained_examples = 0
     for batch_index in range(len(X_train_batches)):
@@ -234,7 +256,7 @@ def _train_one_epoch(X_train_batches, Y_train_batches: Tensor2D, parameters: Par
         Y_train_batch = Y_train_batches[batch_index]
 
         loss, parameters, train_accuracy = _train_one_mini_batch(X_train_batch, Y_train_batch, learning_rate,
-                                                                 parameters)
+                                                                 parameters, lamb)
 
         batch_duration = time.time() - batch_start_time
 
@@ -247,7 +269,7 @@ def _train_one_epoch(X_train_batches, Y_train_batches: Tensor2D, parameters: Par
 
 
 def train(X_train, Y_train, X_test, Y_test: Tensor2D, parameters: Parameters, epochs, batch_size: int,
-          learning_rate: float) -> NoReturn:
+          learning_rate: float, lamb: float) -> NoReturn:
     X_train, Y_train = shuffle_truncate_dataset(X_train, Y_train)
     X_train_batches = split_into_batches(X_train, batch_size)
     Y_train_batches = split_into_batches(Y_train, batch_size)
@@ -256,7 +278,7 @@ def train(X_train, Y_train, X_test, Y_test: Tensor2D, parameters: Parameters, ep
         print("epoch: {}".format(epoch))
         epoch_start_time = time.time()
 
-        parameters = _train_one_epoch(X_train_batches, Y_train_batches, parameters, learning_rate)
+        parameters = _train_one_epoch(X_train_batches, Y_train_batches, parameters, learning_rate, lamb)
 
         test_start_time = time.time()
         test_accuracy = _calculate_accuracy(X_test, Y_test, parameters)

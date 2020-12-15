@@ -179,6 +179,10 @@ def element_log(A: Tensor2D) -> Tensor2D:
     return [[log(Aij) for Aij in Ai] for Ai in A]
 
 
+def element_sq(A: Tensor2D) -> Tensor2D:
+    return [[Aij * Aij for Aij in Ai] for Ai in A]
+
+
 def l2_norm(A: Tensor2D) -> float:
     A_shape = shape(A)
 

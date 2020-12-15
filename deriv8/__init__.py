@@ -8,6 +8,7 @@ from deriv8 import model
 
 def main() -> NoReturn:
     learning_rate = 1e-1
+    lamb = 1e-1
     batch_size = 500
     hidden_units = 32
     epochs = 20
@@ -49,4 +50,4 @@ def main() -> NoReturn:
     layers_num_units = [hidden_units, hidden_units, output_num_units]
     parameters = model.init_parameters(input_num_units, layers_num_units)
 
-    model.train(X_train, Y_train, X_test, Y_test, parameters, epochs, batch_size, learning_rate)
+    model.train(X_train, Y_train, X_test, Y_test, parameters, epochs, batch_size, learning_rate, lamb)
