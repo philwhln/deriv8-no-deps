@@ -1,4 +1,4 @@
-# 2-Layer Deep Neural Network With No Dependencies
+# 3-Layer Deep Neural Network With No Dependencies
 
 This is a "from scratch" Machine Learning implementation with no dependencies except for Python and pytest. So obviously
  a bit slower than using highly optimized Tensorflow, Pytorch, numpy or pandas.
